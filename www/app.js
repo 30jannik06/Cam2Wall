@@ -40,6 +40,7 @@ const HELP = {
 const help = document.getElementById("help");
 help.innerHTML = `<table>${HELP.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table><p>Cam2Wall · go2rtc</p>`;
 help.addEventListener("click", () => { help.hidden = true; });
+document.getElementById("helpBtn").addEventListener("click", () => { help.hidden = !help.hidden; });
 
 const grid = document.getElementById("grid");
 const msg = document.getElementById("msg");
@@ -212,7 +213,8 @@ function enableZoom(tile, view) {
     tile.addEventListener("pointerup", release);
     tile.addEventListener("pointercancel", release);
 
-    tile.addEventListener("click", () => {
+    tile.addEventListener("click", e => {
+        if (e.detail > 0) tile.blur();   // real mouse/touch click: no keyboard focus frame
         if (moved) { moved = false; return; }
         if (s === 1) tile.toggleMax();
     });

@@ -295,3 +295,43 @@ html.mobile .tile.max {
     color: var(--muted);
     font-size: .85rem;
 }
+
+/* ---------- Help button ---------- */
+.help-btn {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 15;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    font: 700 1rem var(--font);
+    color: rgba(255, 255, 255, .85);
+    background: rgba(0, 0, 0, .55);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .25s;
+}
+
+body.mouse .help-btn,
+.help-btn:focus-visible,
+html.mobile .help-btn {
+    opacity: .75;
+}
+
+.help-btn:hover {
+    opacity: 1;
+}
+
+html.mobile .help-btn {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(12px, env(safe-area-inset-right));
+}
+
+/* no focus frame after a mouse/touch click, only for keyboard navigation (Tab) */
+.tile:focus:not(:focus-visible) {
+    outline: none;
+}

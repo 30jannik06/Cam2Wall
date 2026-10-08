@@ -84,6 +84,8 @@ streams:
 Using the low-res sub stream in the grid is the single biggest saving for weak hardware
 (Raspberry Pi Zero) and for Wi-Fi.
 
+> **After updating:** hard-reload the page (`Ctrl+F5`) — go2rtc sends no cache headers, so browsers can keep an old copy for a while.
+
 ## Keyboard & touch
 
 | Action | Mouse | Touch |
@@ -94,7 +96,7 @@ Using the low-res sub stream in the grid is the single biggest saving for weak h
 | Reset zoom | double-click | double-tap |
 | Show names | `N` | always visible on phones |
 | Fullscreen | `F` | – |
-| Help overlay | `?` or `H` | – |
+| Help overlay | `?` or `H` or the round **?** button | **?** button |
 
 On a phone, "Add to Home Screen" opens the dashboard as a fullscreen app.
 

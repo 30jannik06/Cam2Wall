@@ -1051,6 +1051,17 @@ sudo systemctl enable --now cam2wall</pre></div>
                 <h2><span class="n">08</span><span class="en">Troubleshooting</span><span class="de">Probleme lösen</span></h2>
 
                 <details>
+                    <summary><span class="en">The page looks old / a new feature is missing after an update</span><span class="de">Seite wirkt alt / neue Funktion fehlt nach einem Update</span></summary>
+                    <div>
+                        <p class="en">go2rtc sends no cache headers for the dashboard files, so browsers may keep an older copy for a while.
+                            Do a hard reload: <kbd>Ctrl</kbd>+<kbd>F5</kbd> (Mac: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>); on a phone
+                            clear the site data or reopen the page in a private tab.</p>
+                        <p class="de">go2rtc sendet für die Dashboard-Dateien keine Cache-Header, deshalb behalten Browser mitunter eine ältere
+                            Kopie. Hart neu laden: <kbd>Strg</kbd>+<kbd>F5</kbd> (Mac: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>); am Handy die
+                            Websitedaten löschen oder die Seite in einem privaten Tab öffnen.</p>
+                    </div>
+                </details>
+                <details>
                     <summary><span class="en">Tiles stay on "Connecting …" / "No signal"</span><span class="de">Kacheln bleiben auf „Verbinde …" / „Kein Signal"</span></summary>
                     <div>
                         <p class="en">Open the go2rtc console: errors for the stream URL show up there. Check IP, user/password and
