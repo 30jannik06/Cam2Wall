@@ -46,6 +46,13 @@ const CSS = `
 
 const rand = (a, b) => a + Math.random() * (b - a);
 
+// a random point just outside one of the four screen edges
+function edgePoint() {
+    const m = SIZE * 2;
+    return [[-m, rand(0, innerHeight)], [innerWidth + m, rand(0, innerHeight)],
+            [rand(0, innerWidth), -m], [rand(0, innerWidth), innerHeight + m]][Math.floor(rand(0, 4))];
+}
+
 export function startSpider() {
     const style = document.createElement("style");
     style.textContent = CSS;
@@ -55,18 +62,16 @@ export function startSpider() {
     document.head.append(style);
     document.body.append(el);
 
-    let x = -SIZE * 2, y = rand(0, innerHeight), angle = 0;   // enters from the left
+    let [x, y] = edgePoint();                                  // enters from a random edge
     let tx = rand(0.2, 0.8) * innerWidth, ty = rand(0.2, 0.8) * innerHeight;
+    let angle = Math.atan2(ty - y, tx - x) + Math.PI / 2;      // already facing its first target
     let speed = rand(...SPEED), wait = 0, last = performance.now(), raf = 0, respawn = 0, dead = false, stopped = false;
 
     const place = () => { el.style.transform = `translate(${x - SIZE / 2}px, ${y - SIZE / 2}px) rotate(${angle}rad)`; };
 
     function nextTarget() {
-        const edge = Math.random() < 0.25;   // sometimes leave the screen and come back from another side
-        if (edge) {
-            const side = Math.floor(rand(0, 4));
-            [tx, ty] = [[-SIZE * 2, rand(0, innerHeight)], [innerWidth + SIZE * 2, rand(0, innerHeight)],
-                        [rand(0, innerWidth), -SIZE * 2], [rand(0, innerWidth), innerHeight + SIZE * 2]][side];
+        if (Math.random() < 0.25) {   // sometimes leave the screen and come back from somewhere else
+            [tx, ty] = edgePoint();
         } else {
             tx = rand(SIZE, innerWidth - SIZE);
             ty = rand(SIZE, innerHeight - SIZE);
@@ -118,8 +123,9 @@ export function startSpider() {
         respawn = setTimeout(() => {
             el.classList.remove("squashed");
             el.innerHTML = SVG;
-            x = -SIZE * 2; y = rand(0, innerHeight); angle = 0;
+            [x, y] = edgePoint();   // pops up at a random edge again
             nextTarget();
+            angle = Math.atan2(ty - y, tx - x) + Math.PI / 2;
             dead = false;
         }, RESPAWN_MS);
     });

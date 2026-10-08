@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#05070b">
+    <title>Cam2Wall remote</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            display: grid;
+            place-content: center;
+            justify-items: center;
+            gap: 28px;
+            padding: 24px;
+            background: #05070b;
+            color: #e5e7eb;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            text-align: center;
+        }
+        h1 { font-size: 1.1rem; font-weight: 600; color: #8b98ad; letter-spacing: .04em; }
+        button {
+            width: min(70vw, 260px);
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 2px solid rgba(148, 163, 184, .25);
+            background: #0d1420;
+            color: #e5e7eb;
+            font-size: 5rem;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .3s, border-color .3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        button:active { transform: scale(.96); }
+        button[aria-pressed="true"] { border-color: #38bdf8; box-shadow: 0 0 60px -6px #38bdf8; }
+        #state { color: #8b98ad; min-height: 1.5em; }
+        a { color: #38bdf8; font-size: .9rem; }
+    </style>
+</head>
+
+<body>
+    <h1>CAM2WALL · REMOTE</h1>
+    <button id="btn" type="button" aria-pressed="false" aria-label="Spider on / off">🕷️</button>
+    <div id="state">…</div>
+    <a href="./">← Dashboard</a>
+
+    <script>
+        // Same shared switch as Shift+S / long-press on "?": a hidden go2rtc stream called "_spider".
+        var NAME = "_spider", btn = document.getElementById("btn"), label = document.getElementById("state"), on = false;
+        var de = (navigator.language || "").toLowerCase().indexOf("de") === 0;
+
+        function show() {
+            btn.setAttribute("aria-pressed", on);
+            label.textContent = on ? (de ? "Spinne ist AN" : "Spider is ON") : (de ? "Spinne ist aus" : "Spider is off");
+        }
+        function poll() {
+            return fetch("/api/streams", { cache: "no-store" }).then(function (r) { return r.json(); })
+                .then(function (s) { on = NAME in s; show(); })
+                .catch(function () { label.textContent = de ? "Keine Verbindung" : "No connection"; });
+        }
+        btn.onclick = function () {
+            var q = on ? "src=" + NAME : "name=" + NAME + "&src=" + encodeURIComponent("rtsp://127.0.0.1:1/spider");
+            fetch("/api/streams?" + q, { method: on ? "DELETE" : "PUT" }).then(poll);
+        };
+        poll(); setInterval(poll, 3000);
+    </script>
+</body>
+
+</html>

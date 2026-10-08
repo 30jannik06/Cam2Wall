@@ -102,12 +102,19 @@ On a phone, "Add to Home Screen" opens the dashboard as a fullscreen app.
 
 ## Easter egg: spider 🕷️
 
-A small spider can crawl over the screen (click it to squash it – it comes back a few seconds later).
+A small spider can crawl over the screen (it appears at a random screen edge; click it to squash it – it comes back a few seconds later).
 It is **off by default** and a **shared switch**: it is on for *everyone* who has the dashboard open, and you can
 flip it from any browser – including your phone:
 
-- press **`Shift+S`**, or
-- **press and hold the round `?` button for ~1.5 seconds** (works on touch screens).
+- open the remote page **`http://<server-ip>:1984/remote.html`** – one big button (ideal on a phone; **no keyboard needed**
+  on the machine that shows the wall, e.g. a Raspberry Pi with only a monitor),
+- press **`Shift+S`** in any dashboard window, or
+- **press and hold the round `?` button for ~1.5 seconds** (works on touch screens), or
+- from a shell, e.g. over SSH on the Pi:
+  ```bash
+  curl -X PUT    "http://localhost:1984/api/streams?name=_spider&src=rtsp://127.0.0.1:1/spider"   # on
+  curl -X DELETE "http://localhost:1984/api/streams?src=_spider"                                 # off
+  ```
 
 The state lives in go2rtc's memory (a hidden stream called `_spider`), so there is nothing to edit or commit and
 it resets when go2rtc restarts. Other viewers pick it up within 5 seconds. For a quick local try-out append

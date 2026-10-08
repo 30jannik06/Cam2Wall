@@ -58,12 +58,19 @@ Siehe [README.md](README.md) (`docker-compose.yml`, `deploy/cam2wall.service`).
 
 ## Easter Egg: Spinne 🕷️
 
-Eine kleine Spinne kann über den Bildschirm krabbeln (Anklicken zerquetscht sie – nach ein paar Sekunden
+Eine kleine Spinne kann über den Bildschirm krabbeln (sie taucht an einem zufälligen Bildschirmrand auf; Anklicken zerquetscht sie – nach ein paar Sekunden
 kommt sie wieder). Sie ist **standardmäßig aus** und ein **gemeinsamer Schalter**: Sie ist bei *allen* an, die das
 Dashboard offen haben, und lässt sich von jedem Browser aus umschalten – auch vom Handy:
 
-- **`Umschalt+S`** drücken, oder
-- **den runden `?`-Knopf ca. 1,5 Sekunden gedrückt halten** (geht auch auf Touchscreens).
+- die Fernbedienungsseite **`http://<Server-IP>:1984/remote.html`** öffnen – ein großer Knopf (ideal am Handy; am Gerät mit
+  der Kamerawand, z. B. einem Raspberry Pi nur mit Monitor, **braucht es keine Tastatur**),
+- **`Umschalt+S`** in einem Dashboard-Fenster drücken, oder
+- **den runden `?`-Knopf ca. 1,5 Sekunden gedrückt halten** (geht auch auf Touchscreens), oder
+- in der Shell, z. B. per SSH auf dem Pi:
+  ```bash
+  curl -X PUT    "http://localhost:1984/api/streams?name=_spider&src=rtsp://127.0.0.1:1/spider"   # an
+  curl -X DELETE "http://localhost:1984/api/streams?src=_spider"                                 # aus
+  ```
 
 Der Zustand liegt im Speicher von go2rtc (ein versteckter Stream namens `_spider`) – es gibt nichts zu bearbeiten
 oder zu committen, und beim Neustart von go2rtc ist die Spinne wieder aus. Andere Betrachter sehen die Änderung
