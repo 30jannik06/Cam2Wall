@@ -291,7 +291,7 @@ async function applySpider() {
     if (spiderBusy || want === !!spiderStop) return;
     spiderBusy = true;
     try {
-        if (want) spiderStop = (await import("./spider.js")).startSpider();
+        if (want) spiderStop = (await import("./spider.js?v=7")).startSpider();
         else { spiderStop(); spiderStop = null; }
     } catch (e) { console.error(e); }
     spiderBusy = false;
