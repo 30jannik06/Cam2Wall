@@ -1,0 +1,23 @@
+# Copy to config/go2rtc.yaml and adjust (start.bat / start.sh do this for you on first run).
+# config/go2rtc.yaml is git-ignored because it contains camera passwords.
+
+api:
+  listen: ":1984"
+  static_dir: "www"        # go2rtc serves the dashboard itself -> http://HOST:1984
+  # Recommended whenever the network is not fully trusted: the API otherwise reveals the
+  # stream URLs including their passwords.
+  # username: admin
+  # password: change-me
+
+# Only needed in Docker (bridge network) or with several network adapters:
+# webrtc:
+#   candidates: ["192.168.1.50:8555"]    # <- LAN IP of the machine running go2rtc
+
+streams:
+  # The grid uses "camN" (use the low-res sub stream), the single view prefers "camN_hd"
+  # if it exists (main stream). "_hd" entries are optional and never shown in the grid.
+  # Alnet NetStation: channel=0 is camera 1, channel=1 is camera 2, ...
+  cam1: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=0&stream=1"
+  cam1_hd: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=0&stream=0"
+  cam2: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=1&stream=1"
+  cam2_hd: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=1&stream=0"

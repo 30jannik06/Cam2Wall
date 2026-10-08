@@ -1,0 +1,23 @@
+# docker compose up -d
+# Prepare first: config/go2rtc.yaml (copy from config/go2rtc.example.yaml);
+# optional HTTPS: run scripts/make-cert.sh (or .ps1) once, otherwise remove the tls.yaml part of "command".
+services:
+  cam2wall:
+    image: alexxit/go2rtc            # multi-arch, also ARM (Raspberry Pi)
+    container_name: cam2wall
+    restart: unless-stopped
+    working_dir: /app                # the config uses relative paths: "www", "certs/..."
+    command: ["go2rtc", "-config", "/config/go2rtc.yaml", "-config", "/config/tls.yaml"]
+    volumes:
+      - ./config:/config:ro
+      - ./www:/app/www:ro
+      - ./certs:/app/certs:ro
+    # Linux / Raspberry Pi: host networking gives WebRTC the right addresses.
+    network_mode: host
+    # Docker Desktop (Windows/macOS) has no host networking. Remove "network_mode" above,
+    # enable the ports below and set webrtc.candidates in config/go2rtc.yaml to the PC's LAN IP.
+    # ports:
+    #   - "1984:1984"
+    #   - "1985:1985"
+    #   - "8555:8555/tcp"
+    #   - "8555:8555/udp"

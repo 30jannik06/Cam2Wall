@@ -1,0 +1,14 @@
+certs/
+bin/
+config/go2rtc.yaml
+config/tls.yaml
+.env
+.claude/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+desktop.ini
+.vscode/
+.idea/
+*.log

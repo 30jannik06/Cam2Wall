@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cam2Wall – Docs</title>
+    <meta name="description" content="Cam2Wall turns RTSP cameras into a fast, full-screen camera wall in any browser. Built on go2rtc. Runs on Windows, Linux, Docker and a Raspberry Pi Zero.">
+    <meta name="theme-color" content="#05070b">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #05070b;
+            --bg2: #0a0f18;
+            --card: #0d1420;
+            --line: rgba(148, 163, 184, .16);
+            --text: #e5e7eb;
+            --muted: #8b98ad;
+            --accent: #38bdf8;
+            --accent2: #22d3ee;
+            --rec: #f87171;
+            --ok: #4ade80;
+            --code: #070b12;
+            --glow: rgba(56, 189, 248, .18);
+            --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+        }
+
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --bg: #f6f8fb;
+            --bg2: #eef2f7;
+            --card: #ffffff;
+            --line: rgba(15, 23, 42, .12);
+            --text: #0f172a;
+            --muted: #55627a;
+            --accent: #0369a1;
+            --accent2: #0891b2;
+            --rec: #dc2626;
+            --ok: #15803d;
+            --code: #0f172a;
+            --glow: rgba(3, 105, 161, .12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 76px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html[data-lang="en"] .de,
+        html[data-lang="de"] .en {
+            display: none !important;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        code {
+            font-family: var(--mono);
+            font-size: .88em;
+            background: var(--bg2);
+            border: 1px solid var(--line);
+            padding: .08em .4em;
+            border-radius: 6px;
+        }
+
+        /* ---------- Top bar ---------- */
+        .top {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px clamp(16px, 4vw, 40px);
+            background: color-mix(in srgb, var(--bg) 82%, transparent);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            color: var(--text);
+        }
+
+        .brand img {
+            width: 26px;
+            height: 26px;
+        }
+
+        .brand:hover {
+            text-decoration: none;
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--text);
+            font: inherit;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .15s, border-color .15s, box-shadow .15s;
+        }
+
+        .btn:hover {
+            text-decoration: none;
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #02131c;
+            border-color: transparent;
+            box-shadow: 0 8px 30px -8px var(--glow), 0 0 0 1px rgba(255, 255, 255, .08) inset;
+        }
+
+        .btn.primary:hover {
+            box-shadow: 0 10px 40px -6px var(--accent);
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* ---------- Hero ---------- */
+        .hero {
+            position: relative;
+            padding: clamp(48px, 9vw, 110px) clamp(16px, 4vw, 40px) 40px;
+            text-align: center;
+        }
+
+        /* decorative grid, faded out towards the bottom (kept off the text via a pseudo-element) */
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(900px 400px at 50% -10%, var(--glow), transparent 70%),
+                linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 44px,
+                linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 44px 100%;
+            -webkit-mask-image: linear-gradient(#000 55%, transparent);
+            mask-image: linear-gradient(#000 55%, transparent);
+        }
+
+        .hero-inner {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--card);
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--rec);
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 color-mix(in srgb, var(--rec) 60%, transparent);
+            }
+
+            50% {
+                opacity: .55;
+                box-shadow: 0 0 0 6px transparent;
+            }
+        }
+
+        h1 {
+            margin: 22px 0 14px;
+            font-size: clamp(2.6rem, 8vw, 5rem);
+            line-height: 1.02;
+            letter-spacing: -.04em;
+            font-weight: 800;
+        }
+
+        h1 .grad {
+            background: linear-gradient(120deg, var(--accent), var(--accent2) 55%, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .lead {
+            max-width: 640px;
+            margin: 0 auto 28px;
+            font-size: clamp(1.02rem, 2.2vw, 1.2rem);
+            color: var(--muted);
+        }
+
+        .cta {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ---------- Fake camera wall ---------- */
+        .wall-wrap {
+            padding: 0 clamp(16px, 4vw, 40px);
+            margin-top: -10px;
+        }
+
+        .wall {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 8px;
+            aspect-ratio: 16 / 8.2;
+            border-radius: 20px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            box-shadow: 0 40px 120px -30px var(--glow), 0 0 0 1px rgba(255, 255, 255, .03) inset;
+        }
+
+        .cam {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background: #000;
+            font-family: var(--mono);
+            font-size: clamp(.5rem, 1.3vw, .72rem);
+            color: rgba(255, 255, 255, .85);
+        }
+
+        .cam::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: var(--feed);
+            filter: blur(14px) saturate(1.2);
+            animation: drift var(--t, 14s) ease-in-out infinite alternate;
+        }
+
+        .cam::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px),
+                radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 0, .55));
+        }
+
+        @keyframes drift {
+            from {
+                transform: translate(-6%, -4%) scale(1.05) rotate(-2deg);
+            }
+
+            to {
+                transform: translate(6%, 5%) scale(1.25) rotate(3deg);
+            }
+        }
+
+        .cam .tag,
+        .cam .rec,
+        .cam .tc {
+            position: absolute;
+            z-index: 2;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .5);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            letter-spacing: .06em;
+        }
+
+        .cam .tag {
+            left: 8px;
+            top: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .cam .rec {
+            right: 8px;
+            top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .cam .rec i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #f87171;
+            animation: pulse 1.6s infinite;
+        }
+
+        .cam .tc {
+            left: 8px;
+            bottom: 8px;
+        }
+
+        .cam.off::before {
+            display: none;
+        }
+
+        .cam.off .nosig {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: grid;
+            place-content: center;
+            justify-items: center;
+            gap: 6px;
+            color: #f87171;
+        }
+
+        .spin {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .15);
+            border-top-color: #38bdf8;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .cam.span2 {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        @media (max-width: 640px) {
+            .wall {
+                grid-template-columns: repeat(2, 1fr);
+                aspect-ratio: auto;
+            }
+
+            .cam {
+                aspect-ratio: 16 / 9;
+            }
+
+            .cam.span2 {
+                grid-column: span 2;
+                grid-row: auto;
+            }
+
+            .cam.hide-m {
+                display: none;
+            }
+        }
+
+        /* ---------- Layout ---------- */
+        .layout {
+            display: grid;
+            grid-template-columns: 220px minmax(0, 1fr);
+            gap: clamp(24px, 5vw, 64px);
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 56px clamp(16px, 4vw, 40px) 40px;
+        }
+
+        .toc {
+            position: sticky;
+            top: 84px;
+            align-self: start;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: .9rem;
+        }
+
+        .toc a {
+            padding: 6px 12px;
+            border-left: 2px solid var(--line);
+            color: var(--muted);
+        }
+
+        .toc a:hover {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .toc a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background: linear-gradient(90deg, var(--glow), transparent);
+        }
+
+        @media (max-width: 880px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .toc {
+                display: none;
+            }
+        }
+
+        section {
+            margin-bottom: 72px;
+        }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            font-size: clamp(1.5rem, 3.4vw, 2rem);
+            letter-spacing: -.02em;
+        }
+
+        h2 .n {
+            font-family: var(--mono);
+            font-size: .8rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+            color: var(--accent);
+            background: var(--glow);
+        }
+
+        h3 {
+            margin: 26px 0 8px;
+            font-size: 1.05rem;
+        }
+
+        p {
+            margin-bottom: 12px;
+            color: var(--muted);
+        }
+
+        p strong,
+        li strong {
+            color: var(--text);
+        }
+
+        ul {
+            margin: 0 0 12px 1.2rem;
+            color: var(--muted);
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .card {
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--card);
+            transition: border-color .2s, transform .2s;
+        }
+
+        .card:hover {
+            border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+            transform: translateY(-2px);
+        }
+
+        .card .ico {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        .card h4 {
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: .92rem;
+        }
+
+        /* ---------- Code ---------- */
+        .code {
+            position: relative;
+            margin: 12px 0 16px;
+            border-radius: 12px;
+            background: var(--code);
+            border: 1px solid var(--line);
+        }
+
+        .code pre {
+            overflow-x: auto;
+            padding: 14px 52px 14px 16px;
+            font-family: var(--mono);
+            font-size: .86rem;
+            line-height: 1.6;
+            color: #d6e2f2;
+        }
+
+        .code .cm {
+            color: #6b7c93;
+        }
+
+        .code .k {
+            color: #7dd3fc;
+        }
+
+        .code .s {
+            color: #86efac;
+        }
+
+        .copy {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .06);
+            color: #cbd5e1;
+            font: 600 .72rem var(--font);
+            cursor: pointer;
+        }
+
+        .copy:hover {
+            background: rgba(255, 255, 255, .14);
+        }
+
+        /* ---------- Tabs ---------- */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            width: max-content;
+            max-width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+            background: var(--bg2);
+            border: 1px solid var(--line);
+        }
+
+        .tabs button {
+            padding: 7px 14px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: var(--muted);
+            font: 600 .88rem var(--font);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tabs button[aria-selected="true"] {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: 0 1px 0 var(--line), 0 0 0 1px var(--line);
+        }
+
+        .panel[hidden] {
+            display: none;
+        }
+
+        .panel {
+            margin-top: 14px;
+        }
+
+        /* ---------- Pipeline ---------- */
+        .flow {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+
+        .node {
+            flex: 1 1 150px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--card);
+            text-align: center;
+        }
+
+        .node b {
+            display: block;
+            color: var(--text);
+        }
+
+        .node small {
+            color: var(--muted);
+        }
+
+        .node.hl {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px -10px var(--glow);
+        }
+
+        .arrow {
+            align-self: center;
+            color: var(--accent);
+            font-family: var(--mono);
+            font-weight: 700;
+        }
+
+        @media (max-width: 720px) {
+            .arrow {
+                width: 100%;
+                text-align: center;
+                transform: rotate(90deg);
+            }
+        }
+
+        /* ---------- Table / details / notes ---------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0 16px;
+            font-size: .92rem;
+        }
+
+        th,
+        td {
+            padding: 9px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        th {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        td:first-child {
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .scroll {
+            overflow-x: auto;
+        }
+
+        kbd {
+            font-family: var(--mono);
+            font-size: .82em;
+            padding: 1px 7px;
+            border-radius: 6px;
+            border: 1px solid var(--line);
+            border-bottom-width: 2px;
+            background: var(--bg2);
+            color: var(--text);
+        }
+
+        .note {
+            margin: 14px 0;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--accent);
+            background: var(--card);
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .note.warn {
+            border-left-color: var(--rec);
+        }
+
+        .note strong {
+            color: var(--text);
+        }
+
+        details {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--card);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 14px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: "+";
+            color: var(--accent);
+            font-family: var(--mono);
+        }
+
+        details[open] summary::after {
+            content: "–";
+        }
+
+        details>div {
+            padding: 0 16px 14px;
+            color: var(--muted);
+        }
+
+        details>div p:last-child {
+            margin-bottom: 0;
+        }
+
+        footer {
+            padding: 36px clamp(16px, 4vw, 40px) 60px;
+            border-top: 1px solid var(--line);
+            text-align: center;
+            color: var(--muted);
+            font-size: .92rem;
+        }
+
+        footer p {
+            margin-bottom: 6px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top">
+        <a class="brand" href="#top"><img src="favicon.svg" alt="">Cam2Wall</a>
+        <span class="spacer"></span>
+        <a class="btn" href="https://github.com/30jannik06/Cam2Wall" target="_blank" rel="noopener">GitHub ↗</a>
+        <button class="btn icon-btn" id="lang" title="Language / Sprache" aria-label="Language">EN</button>
+        <button class="btn icon-btn" id="theme" title="Theme" aria-label="Toggle theme">◐</button>
+    </header>
+
+    <!-- ===================== HERO ===================== -->
+    <div class="hero" id="top">
+        <div class="hero-inner">
+            <span class="pill"><span class="dot"></span>
+                <span class="en">Open source · MIT · built on go2rtc</span>
+                <span class="de">Open Source · MIT · basiert auf go2rtc</span></span>
+            <h1><span class="grad">Cam2Wall</span></h1>
+            <p class="lead">
+                <span class="en">Your RTSP cameras on one full-screen wall – in any browser, with WebRTC latency. No Node, no
+                    build, small enough for a Raspberry Pi Zero.</span>
+                <span class="de">Ihre RTSP-Kameras auf einer Vollbild-Wand – in jedem Browser, mit WebRTC-Latenz. Kein Node, kein
+                    Build, klein genug für einen Raspberry Pi Zero.</span>
+            </p>
+            <div class="cta">
+                <a class="btn primary" href="#quickstart"><span class="en">Get started</span><span class="de">Loslegen</span> →</a>
+                <a class="btn" href="https://github.com/30jannik06/Cam2Wall" target="_blank" rel="noopener"><span class="en">View on GitHub</span><span class="de">Auf GitHub ansehen</span></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="wall-wrap" aria-hidden="true">
+        <div class="wall">
+            <div class="cam span2" style="--t:17s;--feed:radial-gradient(circle at 30% 35%,#2dd4bf 0,transparent 38%),radial-gradient(circle at 75% 60%,#6366f1 0,transparent 42%),#0b1220">
+                <span class="tag">cam1 <span style="color:#38bdf8">HD</span></span><span class="rec"><i></i>LIVE</span><span class="tc" data-tc></span></div>
+            <div class="cam" style="--t:11s;--feed:radial-gradient(circle at 70% 30%,#f59e0b 0,transparent 40%),radial-gradient(circle at 20% 75%,#ef4444 0,transparent 40%),#140d0a">
+                <span class="tag">cam2</span><span class="rec"><i></i>LIVE</span><span class="tc" data-tc></span></div>
+            <div class="cam" style="--t:13s;--feed:radial-gradient(circle at 25% 30%,#38bdf8 0,transparent 42%),radial-gradient(circle at 80% 80%,#22c55e 0,transparent 40%),#08141b">
+                <span class="tag">cam3</span><span class="rec"><i></i>LIVE</span><span class="tc" data-tc></span></div>
+            <div class="cam off hide-m"><span class="tag">cam4</span>
+                <div class="nosig"><span class="spin"></span><span>No signal</span></div></div>
+            <div class="cam hide-m" style="--t:15s;--feed:radial-gradient(circle at 60% 40%,#a78bfa 0,transparent 42%),radial-gradient(circle at 25% 80%,#f472b6 0,transparent 40%),#120a1c">
+                <span class="tag">cam5</span><span class="rec"><i></i>LIVE</span><span class="tc" data-tc></span></div>
+            <div class="cam hide-m" style="--t:19s;--feed:radial-gradient(circle at 35% 55%,#34d399 0,transparent 40%),radial-gradient(circle at 80% 25%,#38bdf8 0,transparent 38%),#07141a">
+                <span class="tag">cam6</span><span class="rec"><i></i>LIVE</span><span class="tc" data-tc></span></div>
+        </div>
+    </div>
+
+    <div class="layout">
+
+        <nav class="toc" aria-label="Contents">
+            <a href="#how"><span class="en">How it works</span><span class="de">So funktioniert's</span></a>
+            <a href="#quickstart"><span class="en">Quick start</span><span class="de">Schnellstart</span></a>
+            <a href="#cameras"><span class="en">Add cameras</span><span class="de">Kameras eintragen</span></a>
+            <a href="#usage"><span class="en">Using the wall</span><span class="de">Bedienung</span></a>
+            <a href="#network"><span class="en">Phone &amp; network</span><span class="de">Handy &amp; Netzwerk</span></a>
+            <a href="#pi"><span class="en">Raspberry Pi</span><span class="de">Raspberry Pi</span></a>
+            <a href="#security"><span class="en">Security</span><span class="de">Sicherheit</span></a>
+            <a href="#troubleshooting"><span class="en">Troubleshooting</span><span class="de">Probleme lösen</span></a>
+        </nav>
+
+        <main>
+
+            <!-- HOW -->
+            <section id="how">
+                <h2><span class="n">01</span><span class="en">How it works</span><span class="de">So funktioniert's</span></h2>
+                <p class="en">Cameras (or a recorder / VMS such as an Alnet NetStation) speak RTSP, which browsers cannot play.
+                    <strong>go2rtc</strong> pulls the streams and re-packages them as WebRTC without re-encoding – cheap on the CPU.
+                    go2rtc also serves the Cam2Wall dashboard, so there is only one process to run.</p>
+                <p class="de">Kameras (oder ein Rekorder / VMS wie der Alnet NetStation) sprechen RTSP, das Browser nicht abspielen
+                    können. <strong>go2rtc</strong> holt die Streams ab und verpackt sie ohne Neukodierung als WebRTC – schonend
+                    für die CPU. go2rtc liefert außerdem das Cam2Wall-Dashboard aus, es läuft also nur ein Prozess.</p>
+                <div class="flow">
+                    <div class="node"><b>📷 <span class="en">Cameras</span><span class="de">Kameras</span></b><small>RTSP :554</small></div>
+                    <span class="arrow">→</span>
+                    <div class="node hl"><b>go2rtc</b><small>RTSP → WebRTC · <span class="en">serves the page</span><span class="de">liefert die Seite</span></small></div>
+                    <span class="arrow">→</span>
+                    <div class="node"><b>🖥️ Browser</b><small>Cam2Wall · :1984 / :1985</small></div>
+                </div>
+                <div class="grid3">
+                    <div class="card"><div class="ico">⚡</div><h4><span class="en">Low latency</span><span class="de">Geringe Latenz</span></h4><p><span class="en">WebRTC straight from go2rtc – no HLS delay.</span><span class="de">WebRTC direkt von go2rtc – keine HLS-Verzögerung.</span></p></div>
+                    <div class="card"><div class="ico">🪶</div><h4><span class="en">Featherweight</span><span class="de">Federleicht</span></h4><p><span class="en">Plain HTML/CSS/JS. No Node, no build, no dependencies.</span><span class="de">Reines HTML/CSS/JS. Kein Node, kein Build, keine Abhängigkeiten.</span></p></div>
+                    <div class="card"><div class="ico">📱</div><h4><span class="en">Phone ready</span><span class="de">Handy-tauglich</span></h4><p><span class="en">Scrollable list, pinch-zoom, installable as an app.</span><span class="de">Scrollbare Liste, Pinch-Zoom, als App installierbar.</span></p></div>
+                    <div class="card"><div class="ico">🧩</div><h4>Windows · Linux · Docker</h4><p><span class="en">One launcher per platform – including Raspberry Pi Zero (ARMv6).</span><span class="de">Je Plattform ein Starter – auch Raspberry Pi Zero (ARMv6).</span></p></div>
+                </div>
+            </section>
+
+            <!-- QUICK START -->
+            <section id="quickstart">
+                <h2><span class="n">02</span><span class="en">Quick start</span><span class="de">Schnellstart</span></h2>
+                <p class="en">On the first start the launcher downloads the pinned go2rtc release from the official GitHub
+                    releases, creates <code>config/go2rtc.yaml</code> from the example and – if openssl is available – a self-signed
+                    certificate.</p>
+                <p class="de">Beim ersten Start lädt der Starter die festgelegte go2rtc-Version von den offiziellen GitHub-Releases,
+                    legt <code>config/go2rtc.yaml</code> aus der Vorlage an und – falls openssl vorhanden ist – ein selbstsigniertes
+                    Zertifikat.</p>
+
+                <div class="tabs" role="tablist" data-tabs>
+                    <button role="tab" aria-selected="true">Windows</button>
+                    <button role="tab" aria-selected="false">Linux / Raspberry Pi</button>
+                    <button role="tab" aria-selected="false">Docker</button>
+                </div>
+
+                <div class="panel" role="tabpanel">
+                    <div class="code"><button class="copy">Copy</button><pre><span class="cm"># </span><span class="k">git clone</span> https://github.com/30jannik06/Cam2Wall.git
+cd Cam2Wall
+start.bat</pre></div>
+                    <p class="en">No git? Download the ZIP from GitHub, unpack it and double-click <code>start.bat</code>.
+                        Enter your camera URLs in the file that opens, then start again.</p>
+                    <p class="de">Kein git? ZIP von GitHub laden, entpacken und <code>start.bat</code> doppelklicken. Kamera-URLs in die
+                        geöffnete Datei eintragen und erneut starten.</p>
+                </div>
+                <div class="panel" role="tabpanel" hidden>
+                    <div class="code"><button class="copy">Copy</button><pre>git clone https://github.com/30jannik06/Cam2Wall.git &amp;&amp; cd Cam2Wall
+sh start.sh            <span class="cm"># first run creates config/go2rtc.yaml – edit it, run again</span></pre></div>
+                    <p class="en">The script detects your CPU (ARMv6 for the Pi Zero, ARMv7, ARM64, x64) and downloads the matching
+                        build. For autostart see <a href="#pi">Raspberry Pi</a>.</p>
+                    <p class="de">Das Skript erkennt Ihre CPU (ARMv6 für den Pi Zero, ARMv7, ARM64, x64) und lädt die passende Version.
+                        Autostart: siehe <a href="#pi">Raspberry Pi</a>.</p>
+                </div>
+                <div class="panel" role="tabpanel" hidden>
+                    <div class="code"><button class="copy">Copy</button><pre>cp config/go2rtc.example.yaml config/go2rtc.yaml   <span class="cm"># edit your cameras</span>
+sh scripts/make-cert.sh                            <span class="cm"># optional: HTTPS</span>
+docker compose up -d</pre></div>
+                    <p class="en">The compose file uses host networking (Linux / Pi). On Docker Desktop (Windows/macOS) use the
+                        <code>ports:</code> block in <code>docker-compose.yml</code> and set <code>webrtc.candidates</code> to your
+                        PC's LAN IP.</p>
+                    <p class="de">Die Compose-Datei nutzt Host-Netzwerk (Linux / Pi). Unter Docker Desktop (Windows/macOS) den
+                        <code>ports:</code>-Block in <code>docker-compose.yml</code> verwenden und <code>webrtc.candidates</code> auf
+                        die LAN-IP des PCs setzen.</p>
+                </div>
+
+                <p class="en">Then open <code>http://localhost:1984</code> – or <code>http://&lt;IP&gt;:1984</code> /
+                    <code>https://&lt;IP&gt;:1985</code> from another device.</p>
+                <p class="de">Danach <code>http://localhost:1984</code> öffnen – oder von einem anderen Gerät
+                    <code>http://&lt;IP&gt;:1984</code> / <code>https://&lt;IP&gt;:1985</code>.</p>
+            </section>
+
+            <!-- CAMERAS -->
+            <section id="cameras">
+                <h2><span class="n">03</span><span class="en">Add cameras</span><span class="de">Kameras eintragen</span></h2>
+                <p class="en">Every stream in <code>config/go2rtc.yaml</code> becomes a tile, except names ending in
+                    <code>_hd</code>. Use the small <strong>sub stream</strong> for the grid and optionally an
+                    <code>_hd</code> twin that is loaded only while a camera is enlarged.</p>
+                <p class="de">Jeder Stream in <code>config/go2rtc.yaml</code> wird eine Kachel – außer Namen mit der Endung
+                    <code>_hd</code>. Im Raster läuft der kleine <strong>Substream</strong>, optional gibt es einen
+                    <code>_hd</code>-Zwilling, der nur in der Einzelansicht geladen wird.</p>
+                <div class="code"><button class="copy">Copy</button><pre><span class="k">api</span>:
+  <span class="k">listen</span>: <span class="s">":1984"</span>
+  <span class="k">static_dir</span>: <span class="s">"www"</span>          <span class="cm"># go2rtc serves the dashboard</span>
+
+<span class="k">streams</span>:
+  <span class="k">cam1</span>:    <span class="s">"rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&amp;channel=0&amp;stream=1"</span>
+  <span class="k">cam1_hd</span>: <span class="s">"rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&amp;channel=0&amp;stream=0"</span>
+  <span class="k">cam2</span>:    <span class="s">"rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&amp;channel=1&amp;stream=1"</span></pre></div>
+                <div class="note"><strong>Alnet NetStation:</strong>
+                    <span class="en"><code>channel=0</code> is camera 1, <code>channel=1</code> camera 2, and so on. <code>stream=0</code>
+                        is the main stream, <code>stream=1</code> the sub stream.</span>
+                    <span class="de"><code>channel=0</code> ist Kamera 1, <code>channel=1</code> Kamera 2 usw. <code>stream=0</code> ist der
+                        Hauptstream, <code>stream=1</code> der Substream.</span></div>
+            </section>
+
+            <!-- USAGE -->
+            <section id="usage">
+                <h2><span class="n">04</span><span class="en">Using the wall</span><span class="de">Bedienung</span></h2>
+                <div class="scroll"><table>
+                    <tr><th><span class="en">Action</span><span class="de">Aktion</span></th><th>Desktop</th><th>Touch</th></tr>
+                    <tr><td><span class="en">Single view on/off</span><span class="de">Einzelansicht an/aus</span></td><td>Click · <kbd>Enter</kbd> · <kbd>Esc</kbd></td><td>Tap</td></tr>
+                    <tr><td>Zoom (max 8×)</td><td><span class="en">Mouse wheel</span><span class="de">Mausrad</span></td><td>Pinch</td></tr>
+                    <tr><td><span class="en">Pan</span><span class="de">Verschieben</span></td><td><span class="en">Drag (when zoomed)</span><span class="de">Ziehen (beim Zoomen)</span></td><td><span class="en">One finger</span><span class="de">Ein Finger</span></td></tr>
+                    <tr><td><span class="en">Reset zoom</span><span class="de">Zoom zurücksetzen</span></td><td><span class="en">Double-click</span><span class="de">Doppelklick</span></td><td><span class="en">Double-tap</span><span class="de">Doppeltipp</span></td></tr>
+                    <tr><td><span class="en">Show names</span><span class="de">Namen anzeigen</span></td><td><kbd>N</kbd></td><td><span class="en">always on</span><span class="de">immer an</span></td></tr>
+                    <tr><td><span class="en">Fullscreen</span><span class="de">Vollbild</span></td><td><kbd>F</kbd></td><td>–</td></tr>
+                    <tr><td><span class="en">Help overlay</span><span class="de">Hilfe-Overlay</span></td><td><kbd>?</kbd> / <kbd>H</kbd></td><td>–</td></tr>
+                </table></div>
+                <p class="en"><strong>Tip:</strong> on a phone choose "Add to Home Screen" – Cam2Wall then opens as a fullscreen app. On a
+                    TV or wall tablet press <kbd>F</kbd>; the mouse cursor hides itself.</p>
+                <p class="de"><strong>Tipp:</strong> Am Handy „Zum Startbildschirm hinzufügen" wählen – Cam2Wall öffnet dann als
+                    Vollbild-App. Am TV oder Wand-Tablet <kbd>F</kbd> drücken; der Mauszeiger blendet sich selbst aus.</p>
+            </section>
+
+            <!-- NETWORK -->
+            <section id="network">
+                <h2><span class="n">05</span><span class="en">Phone &amp; network</span><span class="de">Handy &amp; Netzwerk</span></h2>
+                <p class="en">Phone and server must be on the same network. Open <code>http://&lt;server-IP&gt;:1984</code> (the start
+                    script prints the IPs). Allow these ports in the firewall:</p>
+                <p class="de">Handy und Server müssen im selben Netzwerk sein. <code>http://&lt;Server-IP&gt;:1984</code> öffnen (das
+                    Startskript zeigt die IPs an). Diese Ports in der Firewall freigeben:</p>
+                <div class="scroll"><table>
+                    <tr><th>Port</th><th><span class="en">Purpose</span><span class="de">Zweck</span></th></tr>
+                    <tr><td>TCP 1984</td><td><span class="en">Dashboard + API (HTTP)</span><span class="de">Dashboard + API (HTTP)</span></td></tr>
+                    <tr><td>TCP 1985</td><td><span class="en">Dashboard + API (HTTPS, self-signed)</span><span class="de">Dashboard + API (HTTPS, selbstsigniert)</span></td></tr>
+                    <tr><td>TCP + UDP 8555</td><td><span class="en">WebRTC video</span><span class="de">WebRTC-Video</span></td></tr>
+                </table></div>
+                <h3>Windows firewall</h3>
+                <div class="code"><button class="copy">Copy</button><pre><span class="cm"># PowerShell as Administrator</span>
+New-NetFirewallRule -DisplayName "Cam2Wall" -Direction Inbound -Action Allow -Profile Private -Protocol TCP -LocalPort 1984,1985,8555
+New-NetFirewallRule -DisplayName "Cam2Wall UDP" -Direction Inbound -Action Allow -Profile Private -Protocol UDP -LocalPort 8555</pre></div>
+                <h3>HTTPS</h3>
+                <p class="en">Port 1985 uses a self-signed certificate created by <code>scripts/make-cert.*</code>. The browser warns
+                    once – choose "Advanced → Proceed". It is not needed for normal use, but some features of "installed" web apps
+                    prefer HTTPS.</p>
+                <p class="de">Port 1985 nutzt ein selbstsigniertes Zertifikat von <code>scripts/make-cert.*</code>. Der Browser warnt
+                    einmal – „Erweitert → Trotzdem fortfahren" wählen. Für den normalen Betrieb ist es nicht nötig, manche Funktionen
+                    installierter Web-Apps bevorzugen aber HTTPS.</p>
+            </section>
+
+            <!-- PI -->
+            <section id="pi">
+                <h2><span class="n">06</span><span class="en">Raspberry Pi</span><span class="de">Raspberry Pi</span></h2>
+                <ul class="en">
+                    <li><strong>Use sub streams in the grid</strong> (<code>stream=1</code>) – the biggest saving for Pi and Wi-Fi.</li>
+                    <li>go2rtc does <strong>no transcoding</strong> for H.264 cameras, so the CPU mostly forwards packets.</li>
+                    <li>A Pi Zero has 2.4 GHz Wi-Fi only; many parallel streams and viewers will saturate it. Prefer Ethernet/USB adapters if you can.</li>
+                    <li>Streams pause automatically when a tab is hidden or a tile is out of view.</li>
+                </ul>
+                <ul class="de">
+                    <li><strong>Im Raster Substreams nutzen</strong> (<code>stream=1</code>) – die größte Ersparnis für Pi und WLAN.</li>
+                    <li>go2rtc <strong>transkodiert nicht</strong> bei H.264-Kameras, die CPU leitet überwiegend Pakete weiter.</li>
+                    <li>Der Pi Zero hat nur 2,4-GHz-WLAN; viele parallele Streams und Zuschauer sättigen es. Wenn möglich Ethernet/USB-Adapter nutzen.</li>
+                    <li>Streams pausieren automatisch, wenn der Tab verborgen oder die Kachel nicht sichtbar ist.</li>
+                </ul>
+                <h3>Autostart (systemd)</h3>
+                <div class="code"><button class="copy">Copy</button><pre>sudo cp deploy/cam2wall.service /etc/systemd/system/
+sudo nano /etc/systemd/system/cam2wall.service    <span class="cm"># adjust User + paths</span>
+sudo systemctl enable --now cam2wall</pre></div>
+            </section>
+
+            <!-- SECURITY -->
+            <section id="security">
+                <h2><span class="n">07</span><span class="en">Security</span><span class="de">Sicherheit</span></h2>
+                <div class="note warn"><strong><span class="en">go2rtc's API has no login by default.</span><span class="de">Die go2rtc-API hat standardmäßig keine Anmeldung.</span></strong>
+                    <span class="en">Anyone who can reach port 1984/1985 can read the stream URLs <em>including camera passwords</em>
+                        (<code>/api/streams</code>).</span>
+                    <span class="de">Jeder, der Port 1984/1985 erreicht, kann die Stream-URLs <em>samt Kamera-Passwörtern</em> auslesen
+                        (<code>/api/streams</code>).</span></div>
+                <ul class="en">
+                    <li>Run it only on a trusted network, or enable a login:</li>
+                </ul>
+                <ul class="de">
+                    <li>Nur in einem vertrauenswürdigen Netz betreiben oder eine Anmeldung aktivieren:</li>
+                </ul>
+                <div class="code"><button class="copy">Copy</button><pre><span class="k">api</span>:
+  <span class="k">username</span>: admin
+  <span class="k">password</span>: change-me</pre></div>
+                <ul class="en">
+                    <li><strong>Never expose the ports to the internet.</strong> For remote access use a VPN (WireGuard, Tailscale).</li>
+                    <li><code>config/go2rtc.yaml</code>, <code>certs/</code> and <code>bin/</code> are git-ignored – don't commit them.</li>
+                </ul>
+                <ul class="de">
+                    <li><strong>Ports niemals ins Internet freigeben.</strong> Für Fernzugriff ein VPN nutzen (WireGuard, Tailscale).</li>
+                    <li><code>config/go2rtc.yaml</code>, <code>certs/</code> und <code>bin/</code> sind git-ignoriert – nicht committen.</li>
+                </ul>
+            </section>
+
+            <!-- TROUBLESHOOTING -->
+            <section id="troubleshooting">
+                <h2><span class="n">08</span><span class="en">Troubleshooting</span><span class="de">Probleme lösen</span></h2>
+
+                <details>
+                    <summary><span class="en">Tiles stay on "Connecting …" / "No signal"</span><span class="de">Kacheln bleiben auf „Verbinde …" / „Kein Signal"</span></summary>
+                    <div>
+                        <p class="en">Open the go2rtc console: errors for the stream URL show up there. Check IP, user/password and
+                            channel in <code>config/go2rtc.yaml</code>. Test the URL in VLC. On a phone, also check that TCP+UDP
+                            <strong>8555</strong> is allowed in the firewall.</p>
+                        <p class="de">go2rtc-Konsole ansehen: Fehler zur Stream-URL stehen dort. IP, Benutzer/Passwort und Kanal in
+                            <code>config/go2rtc.yaml</code> prüfen, die URL in VLC testen. Am Handy zusätzlich TCP+UDP
+                            <strong>8555</strong> in der Firewall prüfen.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary><span class="en">Works on the PC, not on the phone</span><span class="de">Läuft am PC, aber nicht am Handy</span></summary>
+                    <div>
+                        <p class="en">Use the PC's LAN IP (not <code>localhost</code>) and the <strong>same Wi-Fi</strong>. Allow ports
+                            1984, 1985 and 8555 (see <a href="#network">Phone &amp; network</a>). If the browser forces
+                            <code>https://</code>, use port 1985 and accept the certificate warning.</p>
+                        <p class="de">Die LAN-IP des PCs verwenden (nicht <code>localhost</code>) und das <strong>gleiche WLAN</strong>.
+                            Ports 1984, 1985 und 8555 freigeben (siehe <a href="#network">Handy &amp; Netzwerk</a>). Erzwingt der Browser
+                            <code>https://</code>, Port 1985 nutzen und die Zertifikatswarnung akzeptieren.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary><span class="en">go2rtc log: "request origin not allowed"</span><span class="de">go2rtc-Log: „request origin not allowed"</span></summary>
+                    <div>
+                        <p class="en">An old browser tab or bookmark opens the page from a different port or host than go2rtc. Open
+                            the dashboard directly at <code>http://localhost:1984</code> and close old tabs.</p>
+                        <p class="de">Ein alter Tab oder ein Lesezeichen öffnet die Seite von einem anderen Port/Host als go2rtc. Das
+                            Dashboard direkt unter <code>http://localhost:1984</code> öffnen und alte Tabs schließen.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary><span class="en">"address already in use"</span><span class="de">„address already in use"</span></summary>
+                    <div>
+                        <p class="en">Another go2rtc (or program) already uses 1984/1985/8554/8555. <code>start.bat</code> stops old
+                            go2rtc processes itself; on Linux run <code>pkill go2rtc</code> or change the ports in the config.</p>
+                        <p class="de">Ein anderes go2rtc (oder Programm) belegt 1984/1985/8554/8555. <code>start.bat</code> beendet alte
+                            go2rtc-Prozesse selbst; unter Linux <code>pkill go2rtc</code> ausführen oder die Ports in der Config ändern.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary><span class="en">HTTPS is not available</span><span class="de">HTTPS ist nicht verfügbar</span></summary>
+                    <div>
+                        <p class="en">The certificate is created with openssl. Install it (Windows: it ships with Git for Windows) and run
+                            <code>scripts/make-cert.ps1</code> / <code>scripts/make-cert.sh</code>. HTTP on port 1984 works regardless.</p>
+                        <p class="de">Das Zertifikat entsteht mit openssl. Installieren (Windows: ist in Git for Windows enthalten) und
+                            <code>scripts/make-cert.ps1</code> / <code>scripts/make-cert.sh</code> ausführen. HTTP auf Port 1984 geht
+                            auch ohne.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary><span class="en">The picture does not play at all / wrong codec</span><span class="de">Bild läuft gar nicht / falscher Codec</span></summary>
+                    <div>
+                        <p class="en">Browsers play H.264 via WebRTC. H.265 (HEVC) cameras need transcoding in go2rtc (needs ffmpeg and
+                            a strong CPU – not a Pi Zero) or an H.264 stream setting on the camera. See the
+                            <a href="https://github.com/AlexxIT/go2rtc" target="_blank" rel="noopener">go2rtc documentation</a>.</p>
+                        <p class="de">Browser spielen H.264 per WebRTC. H.265-(HEVC-)Kameras brauchen Transkodierung in go2rtc (ffmpeg und
+                            eine starke CPU – nichts für den Pi Zero) oder eine H.264-Einstellung an der Kamera. Siehe die
+                            <a href="https://github.com/AlexxIT/go2rtc" target="_blank" rel="noopener">go2rtc-Dokumentation</a>.</p>
+                    </div>
+                </details>
+
+                <p class="en" style="margin-top:20px">Still stuck? <a href="https://github.com/30jannik06/Cam2Wall/issues/new/choose" target="_blank" rel="noopener">Open an issue</a> – and please remove passwords from logs.</p>
+                <p class="de" style="margin-top:20px">Weiter ein Problem? <a href="https://github.com/30jannik06/Cam2Wall/issues/new/choose" target="_blank" rel="noopener">Issue erstellen</a> – bitte Passwörter aus Logs entfernen.</p>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p class="en">Cam2Wall is MIT licensed. All the heavy lifting is done by
+            <a href="https://github.com/AlexxIT/go2rtc" target="_blank" rel="noopener">go2rtc</a> by AlexxIT – give it a ⭐.</p>
+        <p class="de">Cam2Wall steht unter MIT-Lizenz. Die eigentliche Arbeit macht
+            <a href="https://github.com/AlexxIT/go2rtc" target="_blank" rel="noopener">go2rtc</a> von AlexxIT – gebt ihm einen ⭐.</p>
+        <p><a href="https://github.com/30jannik06/Cam2Wall" target="_blank" rel="noopener">github.com/30jannik06/Cam2Wall</a></p>
+    </footer>
+
+    <script>
+        (function () {
+            var root = document.documentElement;
+            function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+            function set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+
+            // ----- language -----
+            var lang = get("lang") || ((navigator.language || "en").toLowerCase().indexOf("de") === 0 ? "de" : "en");
+            function setLang(l) {
+                lang = l; root.dataset.lang = l; root.lang = l;
+                document.getElementById("lang").textContent = l === "de" ? "DE" : "EN";
+                set("lang", l);
+            }
+            setLang(lang);
+            document.getElementById("lang").onclick = function () { setLang(lang === "en" ? "de" : "en"); };
+
+            // ----- theme -----
+            var theme = get("theme");
+            function setTheme(t) { if (t) root.dataset.theme = t; else root.removeAttribute("data-theme"); }
+            setTheme(theme);
+            document.getElementById("theme").onclick = function () {
+                var cur = root.dataset.theme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+                var next = cur === "dark" ? "light" : "dark";
+                setTheme(next); set("theme", next);
+            };
+
+            // ----- tabs -----
+            document.querySelectorAll("[data-tabs]").forEach(function (bar) {
+                var btns = bar.querySelectorAll("button");
+                var panels = []; var el = bar.nextElementSibling;
+                while (el && el.classList.contains("panel")) { panels.push(el); el = el.nextElementSibling; }
+                btns.forEach(function (b, i) {
+                    b.onclick = function () {
+                        btns.forEach(function (x, j) { x.setAttribute("aria-selected", j === i); panels[j].hidden = j !== i; });
+                    };
+                });
+            });
+
+            // ----- copy buttons -----
+            document.querySelectorAll(".copy").forEach(function (b) {
+                b.onclick = function () {
+                    var text = b.parentNode.querySelector("pre").innerText;
+                    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () {
+                        b.textContent = "Copied ✓"; setTimeout(function () { b.textContent = "Copy"; }, 1500);
+                    }, function () { b.textContent = "Ctrl+C"; });
+                };
+            });
+
+            // ----- scrollspy -----
+            var links = {}; document.querySelectorAll(".toc a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+            if ("IntersectionObserver" in window) {
+                var io = new IntersectionObserver(function (es) {
+                    es.forEach(function (e) {
+                        if (e.isIntersecting) {
+                            Object.keys(links).forEach(function (k) { links[k].classList.toggle("active", k === e.target.id); });
+                        }
+                    });
+                }, { rootMargin: "-25% 0px -65% 0px" });
+                document.querySelectorAll("main section").forEach(function (s) { io.observe(s); });
+            }
+
+            // ----- fake timecode on the demo wall -----
+            function tc() {
+                var d = new Date(), p = function (n) { return (n < 10 ? "0" : "") + n; };
+                var s = d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+                document.querySelectorAll("[data-tc]").forEach(function (e) { e.textContent = s; });
+            }
+            tc(); setInterval(tc, 1000);
+        })();
+    </script>
+</body>
+
+</html>

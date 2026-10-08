@@ -1,0 +1,18 @@
+# Autostart on a Raspberry Pi / Linux (systemd):
+#   sudo cp deploy/cam2wall.service /etc/systemd/system/
+#   sudo nano /etc/systemd/system/cam2wall.service     # adjust User + paths
+#   sudo systemctl enable --now cam2wall
+[Unit]
+Description=Cam2Wall camera dashboard (go2rtc)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/cam2wall
+ExecStart=/bin/sh /home/pi/cam2wall/start.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

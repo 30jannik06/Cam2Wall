@@ -1,0 +1,30 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell scripts are valid POSIX sh
+        run: |
+          for f in start.sh scripts/*.sh; do sh -n "$f" && echo "ok  $f"; done
+      - name: JavaScript is valid
+        run: |
+          node --input-type=module --check < www/app.js
+          node --input-type=module --check < www/video-rtc.js
+      - name: Example config is valid YAML
+        run: |
+          pip install --quiet pyyaml
+          python3 -c "import sys, yaml; yaml.safe_load(open('config/go2rtc.example.yaml')); print('ok')"
+      - name: No secrets or binaries tracked
+        run: |
+          ! git ls-files | grep -E '^(certs/|bin/|config/(go2rtc|tls)\.yaml$)'
+          ! git ls-files | grep -E '\.(exe|pem|key)$'

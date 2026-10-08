@@ -1,0 +1,67 @@
+name: Bug report / Fehlermeldung
+description: Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time! Please check the [troubleshooting section](https://30jannik06.github.io/Cam2Wall/#troubleshooting) first.
+        **Never paste camera passwords or full RTSP URLs** – replace them with `USER:PASSWORD@SERVER_IP`.
+        Problems with the video stream itself (codec, RTSP, WebRTC negotiation) usually belong to [go2rtc](https://github.com/AlexxIT/go2rtc/issues).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start with start.bat
+        2. Open http://...:1984 on the phone
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Where does go2rtc / Cam2Wall run?
+      options:
+        - Windows
+        - Linux (x86 / x64)
+        - Raspberry Pi Zero (ARMv6)
+        - Raspberry Pi (ARMv7 / ARM64)
+        - Docker
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: "Chrome 130 on Android 15 / Safari on iPhone / Firefox on Windows ..."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Cam2Wall commit / go2rtc version
+      description: "go2rtc version is printed in the first log line, e.g. 1.9.14"
+  - type: dropdown
+    id: access
+    attributes:
+      label: How do you open the dashboard?
+      options:
+        - http (port 1984)
+        - https (port 1985, self-signed)
+        - Docker
+        - Behind a reverse proxy
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / browser console
+      description: go2rtc console output and/or browser console (F12). Remove passwords!
+      render: text

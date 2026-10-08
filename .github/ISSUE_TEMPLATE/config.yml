@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation & troubleshooting
+    url: https://30jannik06.github.io/Cam2Wall/
+    about: Quick start, configuration, ports, HTTPS and common problems.
+  - name: go2rtc issues (stream / codec / RTSP problems)
+    url: https://github.com/AlexxIT/go2rtc/issues
+    about: If the picture does not play at all, the cause is often in go2rtc or the camera.
+  - name: Security vulnerability
+    url: https://github.com/30jannik06/Cam2Wall/security/advisories/new
+    about: Please report security problems privately, not as a public issue.

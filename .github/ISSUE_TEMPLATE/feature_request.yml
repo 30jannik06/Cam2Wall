@@ -1,0 +1,29 @@
+name: Feature request / Idee
+description: Suggest an improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem do you want to solve?
+      placeholder: "I use Cam2Wall on a wall-mounted tablet and ..."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      description: Cam2Wall stays small on purpose (no build step, no dependencies, runs on a Pi Zero).
+      options:
+        - label: This works without extra runtime dependencies or a build step
+        - label: I would be willing to help implement it

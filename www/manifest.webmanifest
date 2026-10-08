@@ -1,0 +1,9 @@
+{
+  "name": "Cam2Wall",
+  "short_name": "Cam2Wall",
+  "start_url": ".",
+  "display": "fullscreen",
+  "background_color": "#05070b",
+  "theme_color": "#05070b",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

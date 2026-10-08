@@ -1,0 +1,297 @@
+/* Cam2Wall – no external dependencies (works offline, light on a Raspberry Pi) */
+
+:root {
+    color-scheme: dark;
+    --bg: #05070b;
+    --tile: #000;
+    --text: #e5e7eb;
+    --muted: #64748b;
+    --accent: #38bdf8;
+    --danger: #f87171;
+    --gap: 6px;
+    --radius: 12px;
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    overflow: hidden;
+}
+
+/* Cursor hides itself on wall displays until the mouse moves */
+body:not(.mouse) {
+    cursor: none;
+}
+
+/* ---------- Grid (desktop / landscape): columns & rows are set by app.js ---------- */
+.grid {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    gap: var(--gap);
+    padding: var(--gap);
+    grid-template-columns: repeat(var(--cols, 1), 1fr);
+    grid-template-rows: repeat(var(--rows, 1), 1fr);
+}
+
+.tile {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    background: var(--tile);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+    transition: box-shadow .2s;
+}
+
+.tile:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.view {
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+}
+
+.view camera-stream,
+.view video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--tile);
+}
+
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+/* ---------- Name tag ---------- */
+.tag {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .9);
+    background: rgba(0, 0, 0, .5);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .25s;
+}
+
+.tile:hover .tag,
+.tile:focus-visible .tag,
+.tile.max .tag,
+body.show-tags .tag {
+    opacity: 1;
+}
+
+.tag .hd {
+    margin-left: .5em;
+    color: var(--accent);
+}
+
+/* ---------- Connection status ---------- */
+.status {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 10px;
+    font-size: .9rem;
+    color: var(--muted);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+.tile[data-state="loading"] .status,
+.tile[data-state="offline"] .status {
+    opacity: 1;
+}
+
+.spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, .12);
+    border-top-color: var(--accent);
+    animation: spin 1s linear infinite;
+}
+
+.tile[data-state="offline"] .spinner {
+    display: none;
+}
+
+.tile[data-state="offline"] .status {
+    color: var(--danger);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation-duration: 3s;
+    }
+
+    * {
+        transition: none !important;
+    }
+}
+
+/* ---------- Single view: grid collapses to one cell ---------- */
+.grid:has(.tile.max) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.grid:has(.tile.max) .tile:not(.max) {
+    display: none;
+}
+
+.tile.max .view camera-stream,
+.tile.max .view video {
+    object-fit: contain;
+}
+
+/* ---------- Phone portrait: scrollable column of 16:9 tiles ---------- */
+html.mobile,
+html.mobile body {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+    -webkit-text-size-adjust: 100%;
+}
+
+html.mobile body {
+    cursor: default;
+}
+
+html.mobile body:has(.tile.max) {
+    overflow: hidden;
+    height: 100dvh;
+}
+
+html.mobile .grid {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+}
+
+html.mobile .tile {
+    flex: none;
+    aspect-ratio: 16 / 9;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html.mobile .tag {
+    opacity: 1;
+    font-size: .75rem;
+}
+
+html.mobile .grid:has(.tile.max) {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+html.mobile .tile.max {
+    aspect-ratio: auto;
+    touch-action: none;
+}
+
+/* ---------- Messages ---------- */
+.msg {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--muted);
+    pointer-events: none;
+}
+
+.msg a {
+    color: var(--accent);
+    pointer-events: auto;
+}
+
+.msg.err {
+    color: var(--danger);
+}
+
+/* ---------- Help overlay (key "?" / "H") ---------- */
+.help {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-content: center;
+    background: rgba(5, 7, 11, .88);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-size: 1rem;
+    line-height: 2;
+}
+
+.help[hidden] {
+    display: none;
+}
+
+.help table {
+    border-collapse: collapse;
+}
+
+.help td {
+    padding: 0 1.2rem 0 0;
+}
+
+.help td:first-child {
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.help p {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: .85rem;
+}
