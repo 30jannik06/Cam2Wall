@@ -100,6 +100,19 @@ Using the low-res sub stream in the grid is the single biggest saving for weak h
 
 On a phone, "Add to Home Screen" opens the dashboard as a fullscreen app.
 
+## Easter egg: spider 🕷️
+
+A small spider can crawl over the screen (click it to squash it – it comes back a few seconds later).
+It is **off by default** and controlled by a state file that the page polls every 5 seconds, so it can be
+switched on and off remotely without reloading the page:
+
+```bash
+echo '{"spider": true}'  > www/state.json     # on   (use {"spider": false} or delete the file to switch off)
+```
+
+For a quick local try-out add `?spider=1` to the URL (`?spider=0` turns it off) or press `Shift+S`.
+`www/state.json` is git-ignored. Remember: the browser may need a hard reload (`Ctrl+F5`) once to get the new code.
+
 ## Security — please read
 
 - go2rtc's API has **no login by default** and reveals stream URLs *including passwords*

@@ -56,6 +56,19 @@ Klick = Einzelansicht · Mausrad/Pinch = Zoom · Ziehen = Verschieben · Doppelk
 
 Siehe [README.md](README.md) (`docker-compose.yml`, `deploy/cam2wall.service`).
 
+## Easter Egg: Spinne 🕷️
+
+Eine kleine Spinne kann über den Bildschirm krabbeln (Anklicken zerquetscht sie – nach ein paar Sekunden
+kommt sie wieder). Sie ist **standardmäßig aus** und wird über eine Statusdatei gesteuert, die die Seite
+alle 5 Sekunden abfragt. So lässt sie sich aus der Ferne ein- und ausschalten, ohne die Seite neu zu laden:
+
+```bash
+echo '{"spider": true}' > www/state.json     # an   ({"spider": false} oder Datei löschen = aus)
+```
+
+Zum schnellen Ausprobieren `?spider=1` an die Adresse hängen (`?spider=0` schaltet aus) oder `Umschalt+S`
+drücken. `www/state.json` ist git-ignoriert. Der Browser braucht ggf. einmal einen Hard-Reload (`Strg+F5`).
+
 ## Sicherheit
 
 Die go2rtc-API hat standardmäßig **keine Anmeldung** und gibt die Stream-URLs **samt Passwort** heraus.

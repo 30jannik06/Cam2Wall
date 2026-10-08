@@ -277,5 +277,40 @@ addEventListener("mousemove", () => {
     hideTimer = setTimeout(() => document.body.classList.remove("mouse"), 3000);
 });
 
+// ---------------------------------------------------------------- optional "spider" state (prank)
+// On while www/state.json contains {"spider": true} (polled), or locally via ?spider=1|0 / Shift+S.
+let spiderStop = null, spiderBusy = false, fileSpider = false, localSpider = null;
+const urlSpider = params.get("spider");
+if (urlSpider !== null) localSpider = urlSpider !== "0" && urlSpider !== "false";
+
+async function applySpider() {
+    const want = localSpider ?? fileSpider;
+    if (spiderBusy || want === !!spiderStop) return;
+    spiderBusy = true;
+    try {
+        if (want) spiderStop = (await import("./spider.js")).startSpider();
+        else { spiderStop(); spiderStop = null; }
+    } catch (e) { console.error(e); }
+    spiderBusy = false;
+    if ((localSpider ?? fileSpider) !== !!spiderStop) applySpider();
+}
+
+async function pollState() {
+    try {
+        const r = await fetch("state.json", { cache: "no-store" });
+        fileSpider = r.ok ? !!(await r.json()).spider : false;
+    } catch { fileSpider = false; }
+    applySpider();
+}
+
+addEventListener("keydown", e => {
+    if (e.shiftKey && e.key === "S" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        localSpider = !(localSpider ?? fileSpider);
+        applySpider();
+    }
+});
+
 layout();
 init();
+pollState();
+setInterval(pollState, 5000);
