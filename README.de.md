@@ -58,8 +58,11 @@ Siehe [README.md](README.md) (`docker-compose.yml`, `deploy/cam2wall.service`).
 
 ## Easter Egg: Spinne 🕷️
 
-Eine kleine Spinne kann über den Bildschirm krabbeln (sie taucht an einem zufälligen Bildschirmrand auf; Anklicken zerquetscht sie – nach ein paar Sekunden
-kommt sie wieder). Sie ist **standardmäßig aus** und ein **gemeinsamer Schalter**: Sie ist bei *allen* an, die das
+Eine Spinne krabbelt über den Bildschirm und überrascht mit kleinen Auftritten: Sie läuft in **wechselnden Größen**
+(als käme sie auf den Betrachter zu oder ginge weg), **krabbelt aus dem Bild heraus** (winzig und blass, wird beim
+Näherkommen größer), **läuft ins Bild hinein und verschwindet**, **springt plötzlich auf den Bildschirm zu** oder
+**seilt sich am oberen Rand an einem Faden ab**. Sie taucht an zufälligen Stellen auf, wartet dazwischen außerhalb
+des Bildschirms und lässt sich mit einem Klick zerquetschen (sie kommt später wieder).  Sie ist **standardmäßig aus** und ein **gemeinsamer Schalter**: Sie ist bei *allen* an, die das
 Dashboard offen haben, und lässt sich von jedem Browser aus umschalten – auch vom Handy:
 
 - die Fernbedienungsseite **`http://<Server-IP>:1984/remote.html`** öffnen – ein großer Knopf (ideal am Handy; am Gerät mit

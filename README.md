@@ -102,7 +102,10 @@ On a phone, "Add to Home Screen" opens the dashboard as a fullscreen app.
 
 ## Easter egg: spider 🕷️
 
-A small spider can crawl over the screen (it appears at a random screen edge; click it to squash it – it comes back a few seconds later).
+A spider crawls over the screen and plays little acts so it stays unpredictable: it wanders at **different sizes**
+(as if moving towards or away from the viewer), **crawls out of the picture** (tiny and faint, growing as it comes closer),
+**runs away into the picture**, **lunges at the screen**, or **drops from the top edge on a silk thread**. It appears at
+random places, lurks off-screen for a while in between, and can be squashed with a click (it comes back later).
 It is **off by default** and a **shared switch**: it is on for *everyone* who has the dashboard open, and you can
 flip it from any browser – including your phone:
 
