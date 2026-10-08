@@ -234,7 +234,7 @@ async function init() {
         const streams = Object.keys(await (await fetch(`${ORIGIN}/api/streams`)).json());
 
         const hd = new Set(streams.filter(n => n.endsWith("_hd")));
-        const names = streams.filter(n => !hd.has(n));
+        const names = streams.filter(n => !hd.has(n) && !n.startsWith("_"));   // "_..." = internal (hidden)
 
         if (!names.length) {
             msg.textContent = t.none;
@@ -278,13 +278,16 @@ addEventListener("mousemove", () => {
 });
 
 // ---------------------------------------------------------------- optional "spider" state (prank)
-// On while www/state.json contains {"spider": true} (polled), or locally via ?spider=1|0 / Shift+S.
-let spiderStop = null, spiderBusy = false, fileSpider = false, localSpider = null;
+// Shared state: the spider is on for every viewer while go2rtc has a stream named "_spider".
+// Toggle it from any browser: Shift+S, or press-and-hold the round "?" button for ~1.5 s.
+// ?spider=1 / ?spider=0 in the URL overrides it locally. The state lives in go2rtc's memory (gone after a restart).
+const SPIDER_STREAM = "_spider";
+let spiderStop = null, spiderBusy = false, sharedSpider = false, localSpider = null;
 const urlSpider = params.get("spider");
 if (urlSpider !== null) localSpider = urlSpider !== "0" && urlSpider !== "false";
 
 async function applySpider() {
-    const want = localSpider ?? fileSpider;
+    const want = localSpider ?? sharedSpider;
     if (spiderBusy || want === !!spiderStop) return;
     spiderBusy = true;
     try {
@@ -292,25 +295,42 @@ async function applySpider() {
         else { spiderStop(); spiderStop = null; }
     } catch (e) { console.error(e); }
     spiderBusy = false;
-    if ((localSpider ?? fileSpider) !== !!spiderStop) applySpider();
+    if ((localSpider ?? sharedSpider) !== !!spiderStop) applySpider();
 }
 
-async function pollState() {
+async function pollSpider() {
     try {
-        const r = await fetch("state.json", { cache: "no-store" });
-        fileSpider = r.ok ? !!(await r.json()).spider : false;
-    } catch { fileSpider = false; }
+        const streams = await (await fetch(`${ORIGIN}/api/streams`, { cache: "no-store" })).json();
+        sharedSpider = SPIDER_STREAM in streams;
+    } catch { /* keep the last known state */ }
     applySpider();
 }
 
+async function toggleSpider() {
+    localSpider = null;   // the shared state wins again
+    const method = sharedSpider ? "DELETE" : "PUT";
+    const query = sharedSpider ? `src=${SPIDER_STREAM}` : `name=${SPIDER_STREAM}&src=${encodeURIComponent("rtsp://127.0.0.1:1/spider")}`;
+    try { await fetch(`${ORIGIN}/api/streams?${query}`, { method }); } catch (e) { console.error(e); }
+    pollSpider();
+}
+
 addEventListener("keydown", e => {
-    if (e.shiftKey && e.key === "S" && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        localSpider = !(localSpider ?? fileSpider);
-        applySpider();
-    }
+    if (e.shiftKey && e.key === "S" && !e.ctrlKey && !e.metaKey && !e.altKey) toggleSpider();
 });
+
+// press-and-hold on the help button (works on touch screens too)
+{
+    const btn = document.getElementById("helpBtn");
+    let timer = 0, held = false;
+    btn.addEventListener("pointerdown", () => {
+        held = false;
+        timer = setTimeout(() => { held = true; toggleSpider(); }, 1500);
+    });
+    for (const ev of ["pointerup", "pointerleave", "pointercancel"]) btn.addEventListener(ev, () => clearTimeout(timer));
+    btn.addEventListener("click", e => { if (held) { e.stopImmediatePropagation(); held = false; } }, true);
+}
 
 layout();
 init();
-pollState();
-setInterval(pollState, 5000);
+pollSpider();
+setInterval(pollSpider, 5000);

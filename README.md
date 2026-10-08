@@ -103,19 +103,15 @@ On a phone, "Add to Home Screen" opens the dashboard as a fullscreen app.
 ## Easter egg: spider 🕷️
 
 A small spider can crawl over the screen (click it to squash it – it comes back a few seconds later).
-It is **off by default** and controlled by a state file that the page polls every 5 seconds, so it can be
-switched on and off remotely without reloading the page:
+It is **off by default** and a **shared switch**: it is on for *everyone* who has the dashboard open, and you can
+flip it from any browser – including your phone:
 
-```bash
-scripts\spider.ps1 on      # Windows  (off: scripts\spider.ps1 off)
-sh scripts/spider.sh on    # Linux / Pi (off: sh scripts/spider.sh off)
+- press **`Shift+S`**, or
+- **press and hold the round `?` button for ~1.5 seconds** (works on touch screens).
 
-# or by hand:
-echo '{"spider": true}'  > www/state.json     # on   (use {"spider": false} or delete the file to switch off)
-```
-
-For a quick local try-out add `?spider=1` to the URL (`?spider=0` turns it off) or press `Shift+S`.
-`www/state.json` is git-ignored. Remember: the browser may need a hard reload (`Ctrl+F5`) once to get the new code.
+The state lives in go2rtc's memory (a hidden stream called `_spider`), so there is nothing to edit or commit and
+it resets when go2rtc restarts. Other viewers pick it up within 5 seconds. For a quick local try-out append
+`?spider=1` to the URL (`?spider=0` turns it off). After an update a browser may need one hard reload (`Ctrl+F5`).
 
 ## Security — please read
 

@@ -59,19 +59,16 @@ Siehe [README.md](README.md) (`docker-compose.yml`, `deploy/cam2wall.service`).
 ## Easter Egg: Spinne 🕷️
 
 Eine kleine Spinne kann über den Bildschirm krabbeln (Anklicken zerquetscht sie – nach ein paar Sekunden
-kommt sie wieder). Sie ist **standardmäßig aus** und wird über eine Statusdatei gesteuert, die die Seite
-alle 5 Sekunden abfragt. So lässt sie sich aus der Ferne ein- und ausschalten, ohne die Seite neu zu laden:
+kommt sie wieder). Sie ist **standardmäßig aus** und ein **gemeinsamer Schalter**: Sie ist bei *allen* an, die das
+Dashboard offen haben, und lässt sich von jedem Browser aus umschalten – auch vom Handy:
 
-```bash
-scripts\spider.ps1 on      # Windows  (aus: scripts\spider.ps1 off)
-sh scripts/spider.sh on    # Linux / Pi (aus: sh scripts/spider.sh off)
+- **`Umschalt+S`** drücken, oder
+- **den runden `?`-Knopf ca. 1,5 Sekunden gedrückt halten** (geht auch auf Touchscreens).
 
-# oder von Hand:
-echo '{"spider": true}' > www/state.json     # an   ({"spider": false} oder Datei löschen = aus)
-```
-
-Zum schnellen Ausprobieren `?spider=1` an die Adresse hängen (`?spider=0` schaltet aus) oder `Umschalt+S`
-drücken. `www/state.json` ist git-ignoriert. Der Browser braucht ggf. einmal einen Hard-Reload (`Strg+F5`).
+Der Zustand liegt im Speicher von go2rtc (ein versteckter Stream namens `_spider`) – es gibt nichts zu bearbeiten
+oder zu committen, und beim Neustart von go2rtc ist die Spinne wieder aus. Andere Betrachter sehen die Änderung
+innerhalb von 5 Sekunden. Zum Ausprobieren `?spider=1` an die Adresse hängen (`?spider=0` = aus). Nach einem
+Update braucht der Browser ggf. einen Hard-Reload (`Strg+F5`).
 
 ## Sicherheit
 
