@@ -63,6 +63,10 @@ kommt sie wieder). Sie ist **standardmäßig aus** und wird über eine Statusdat
 alle 5 Sekunden abfragt. So lässt sie sich aus der Ferne ein- und ausschalten, ohne die Seite neu zu laden:
 
 ```bash
+scripts\spider.ps1 on      # Windows  (aus: scripts\spider.ps1 off)
+sh scripts/spider.sh on    # Linux / Pi (aus: sh scripts/spider.sh off)
+
+# oder von Hand:
 echo '{"spider": true}' > www/state.json     # an   ({"spider": false} oder Datei löschen = aus)
 ```
 

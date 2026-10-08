@@ -107,6 +107,10 @@ It is **off by default** and controlled by a state file that the page polls ever
 switched on and off remotely without reloading the page:
 
 ```bash
+scripts\spider.ps1 on      # Windows  (off: scripts\spider.ps1 off)
+sh scripts/spider.sh on    # Linux / Pi (off: sh scripts/spider.sh off)
+
+# or by hand:
 echo '{"spider": true}'  > www/state.json     # on   (use {"spider": false} or delete the file to switch off)
 ```
 
