@@ -1,7 +1,7 @@
 #!/bin/sh
 # EXPERIMENTAL: show the wall on a monitor attached to this Raspberry Pi (Raspberry Pi OS Lite), no keyboard needed.
 # Installs cage (minimal Wayland kiosk) + Chromium and a systemd service that opens the dashboard fullscreen.
-# Works best on a Pi Zero 2 W or newer; a Pi Zero (ARMv6) is probably too slow for a browser with video.
+# Needs a CPU with NEON (Pi Zero 2 W, Pi 3/4/5). The original Pi Zero / Pi 1 (ARMv6) cannot run Chromium at all.
 #
 #   sh scripts/kiosk.sh [url]          install + enable   (default url: http://localhost:1984)
 #   sh scripts/kiosk.sh remove         disable and remove
@@ -17,6 +17,11 @@ if [ "$1" = "remove" ]; then
     exit 0
 fi
 
+if ! grep -qiE "neon|asimd" /proc/cpuinfo; then
+    echo "This CPU has no NEON support (e.g. Raspberry Pi Zero / Pi 1, ARMv6): Chromium cannot run on it."
+    echo "Use this Pi as the server only and open the dashboard on another device (or use a Pi Zero 2 W / Pi 3+ for the monitor)."
+    exit 1
+fi
 [ "$(id -u)" -ne 0 ] || { echo "Run this as your normal user (it asks for sudo itself)."; exit 1; }
 URL="${1:-http://localhost:1984}"
 

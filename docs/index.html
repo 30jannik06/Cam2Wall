@@ -1006,12 +1006,14 @@ New-NetFirewallRule -DisplayName "Cam2Wall UDP" -Direction Inbound -Action Allow
                     <li>go2rtc does <strong>no transcoding</strong> for H.264 cameras, so the CPU mostly forwards packets.</li>
                     <li>A Pi Zero has 2.4 GHz Wi-Fi only; many parallel streams and viewers will saturate it. Prefer Ethernet/USB adapters if you can.</li>
                     <li>Streams pause automatically when a tab is hidden or a tile is out of view.</li>
+                    <li><strong>Monitor on the Pi?</strong> Pi OS <em>Lite</em> only shows a console. A browser kiosk (<code>sh scripts/kiosk.sh</code>) needs a CPU with NEON: <strong>Pi Zero 2 W, 3, 4, 5</strong>. The original Pi Zero / Zero W / Pi 1 (ARMv6) cannot run Chromium – use them as the server and open the dashboard on another device.</li>
                 </ul>
                 <ul class="de">
                     <li><strong>Im Raster Substreams nutzen</strong> (<code>stream=1</code>) – die größte Ersparnis für Pi und WLAN.</li>
                     <li>go2rtc <strong>transkodiert nicht</strong> bei H.264-Kameras, die CPU leitet überwiegend Pakete weiter.</li>
                     <li>Der Pi Zero hat nur 2,4-GHz-WLAN; viele parallele Streams und Zuschauer sättigen es. Wenn möglich Ethernet/USB-Adapter nutzen.</li>
                     <li>Streams pausieren automatisch, wenn der Tab verborgen oder die Kachel nicht sichtbar ist.</li>
+                    <li><strong>Monitor am Pi?</strong> Pi OS <em>Lite</em> zeigt nur eine Konsole. Ein Browser-Kiosk (<code>sh scripts/kiosk.sh</code>) braucht eine CPU mit NEON: <strong>Pi Zero 2 W, 3, 4, 5</strong>. Der originale Pi Zero / Zero W / Pi 1 (ARMv6) kann Chromium nicht ausführen – dort als Server nutzen und das Dashboard auf einem anderen Gerät öffnen.</li>
                 </ul>
                 <h3>Autostart (systemd)</h3>
                 <div class="code"><button class="copy">Copy</button><pre>sudo cp deploy/cam2wall.service /etc/systemd/system/

@@ -82,9 +82,10 @@ sudo systemctl start cam2wall-kiosk # start now (it also starts after a reboot)
 sh scripts/kiosk.sh remove          # undo
 ```
 
-A browser with several video streams is heavy: on a **Pi Zero 2 W or newer** it works with a few sub streams; the
-original single-core **Pi Zero (ARMv6)** is most likely too slow – use it as the server only and open the dashboard on
-another device. Untested on real hardware as of now.
+**Requirement:** a CPU with NEON – **Pi Zero 2 W, Pi 3, 4, 5** (64-bit OS recommended). The original **Pi Zero / Zero W / WH
+and Pi 1 (ARMv6) cannot run Chromium** ("hardware lacks support for NEON") – use those as the *server only* and open the
+dashboard on another device. A browser with several video streams is heavy, so use sub streams on the small boards.
+Untested on a Pi with NEON so far.
 
 ## Configuration
 
