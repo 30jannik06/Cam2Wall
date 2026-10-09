@@ -9,6 +9,11 @@ directly on the HDMI output through GStreamer (kmssink). Needs a console without
     python3 scripts/native_wall.py --size 960x540 --fps 8 --max 4
     python3 scripts/native_wall.py --print            # only show the GStreamer pipeline
 
+H.265 cameras: the Zero's GPU only decodes H.264. Let a stronger machine (PC with ffmpeg) run go2rtc and convert, e.g.
+    _h264_cam1: "ffmpeg:cam1#video=h264"     (in that machine's go2rtc.yaml)
+and point the Pi at it:
+    python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --prefix _h264_
+
 Packages:  sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
                                gstreamer1.0-plugins-bad gstreamer1.0-libav python3
 """
@@ -23,9 +28,11 @@ import time
 import urllib.request
 
 
-def get_streams(api):
+def get_streams(api, prefix=""):
     with urllib.request.urlopen(api.rstrip("/") + "/api/streams", timeout=5) as r:
         data = json.load(r)
+    if prefix:   # only streams with this prefix, e.g. "_h264_" = H.264 copies made by a stronger machine
+        return [n for n in data if n.startswith(prefix)]
     # same rule as the web dashboard: hide "_..." (internal) and "..._hd" (main streams)
     return [n for n in data if not n.startswith("_") and not n.endswith("_hd")]
 
@@ -74,6 +81,7 @@ def main():
     ap.add_argument("--cols", type=int, default=0, help="grid columns (default: automatic)")
     ap.add_argument("--max", type=int, default=0, help="show at most N cameras (default: all)")
     ap.add_argument("--streams", default="", help="comma separated stream names instead of all")
+    ap.add_argument("--prefix", default="", help='only streams starting with this prefix, e.g. "_h264_" (see README: H.265 cameras)')
     ap.add_argument("--sink", default="kmssink", help="GStreamer video sink (default %(default)s)")
     ap.add_argument("--print", action="store_true", help="print the pipeline and exit")
     args = ap.parse_args()
@@ -99,7 +107,7 @@ def main():
 
     while True:
         try:
-            names = [s for s in args.streams.split(",") if s] or get_streams(args.api)
+            names = [s for s in args.streams.split(",") if s] or get_streams(args.api, args.prefix)
         except Exception as e:  # go2rtc not up yet
             print(f"waiting for go2rtc ({e}) ...", file=sys.stderr)
             time.sleep(3)

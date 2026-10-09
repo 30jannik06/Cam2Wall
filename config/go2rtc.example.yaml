@@ -21,3 +21,8 @@ streams:
   cam1_hd: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=0&stream=0"
   cam2: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=1&stream=1"
   cam2_hd: "rtsp://USER:PASSWORD@SERVER_IP:554/video?device=vdrs&channel=1&stream=0"
+
+  # H.265 (HEVC) cameras and a browser-less Pi Zero: the Zero's GPU only decodes H.264, so a stronger machine (with ffmpeg)
+  # makes an H.264 copy. Names starting with "_" are hidden in the web dashboard; scripts/native_wall.py --prefix _h264_ shows them.
+  # _h264_cam1: "ffmpeg:cam1#video=h264"
+  # _h264_cam2: "ffmpeg:cam2#video=h264"
