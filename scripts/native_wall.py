@@ -31,7 +31,10 @@ def get_streams(api):
 
 
 def has_element(name):
-    return subprocess.call(["gst-inspect-1.0", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+    try:
+        return subprocess.call(["gst-inspect-1.0", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+    except FileNotFoundError:
+        return None   # GStreamer is not installed at all
 
 
 def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
@@ -70,7 +73,12 @@ def main():
     args = ap.parse_args()
 
     out_w, out_h = (int(v) for v in args.size.lower().split("x"))
-    decoder = "v4l2h264dec" if has_element("v4l2h264dec") else "avdec_h264"
+    found = has_element("v4l2h264dec")
+    if found is None and not args.print:
+        sys.exit("GStreamer is not installed. Run:
+  sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base "
+                 "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav")
+    decoder = "v4l2h264dec" if found or found is None else "avdec_h264"
     if decoder != "v4l2h264dec":
         print("WARNING: v4l2h264dec (hardware decoder) not found - falling back to the software decoder (slow).", file=sys.stderr)
 
