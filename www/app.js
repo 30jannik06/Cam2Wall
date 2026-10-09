@@ -280,7 +280,7 @@ addEventListener("mousemove", () => {
 // ---------------------------------------------------------------- optional "spider" state (prank)
 // Shared state: the spider is on for every viewer while go2rtc has a stream named "_spider".
 // Toggle it from any browser: Shift+S, or press-and-hold the round "?" button for ~1.5 s.
-// ?spider=1 / ?spider=0 in the URL overrides it locally. The state lives in go2rtc's memory (gone after a restart).
+// ?spider=1 / ?spider=0 in the URL overrides it locally. go2rtc saves it in its config file, so it also survives a restart.
 const SPIDER_STREAM = "_spider";
 let spiderStop = null, spiderBusy = false, sharedSpider = false, localSpider = null;
 const urlSpider = params.get("spider");

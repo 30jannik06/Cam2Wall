@@ -75,9 +75,9 @@ Dashboard offen haben, und lässt sich von jedem Browser aus umschalten – auch
   curl -X DELETE "http://localhost:1984/api/streams?src=_spider"                                 # aus
   ```
 
-Der Zustand liegt im Speicher von go2rtc (ein versteckter Stream namens `_spider`) – es gibt nichts zu bearbeiten
-oder zu committen, und beim Neustart von go2rtc ist die Spinne wieder aus. Andere Betrachter sehen die Änderung
-innerhalb von 5 Sekunden. Zum Ausprobieren `?spider=1` an die Adresse hängen (`?spider=0` = aus). Nach einem
+Der Zustand ist ein versteckter Stream namens `_spider` in go2rtc. **go2rtc speichert Streams, die über seine API angelegt werden,
+in `config/go2rtc.yaml` – die Spinne bleibt also an, auch nach einem Neustart, bis sie jemand ausschaltet.** (Der Eintrag
+`_spider` lässt sich auch von Hand aus der Datei löschen.) Andere Betrachter sehen die Änderung innerhalb von 5 Sekunden. Zum Ausprobieren `?spider=1` an die Adresse hängen (`?spider=0` = aus). Nach einem
 Update braucht der Browser ggf. einen Hard-Reload (`Strg+F5`).
 
 ## Sicherheit

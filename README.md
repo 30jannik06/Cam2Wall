@@ -171,8 +171,9 @@ flip it from any browser – including your phone:
   curl -X DELETE "http://localhost:1984/api/streams?src=_spider"                                 # off
   ```
 
-The state lives in go2rtc's memory (a hidden stream called `_spider`), so there is nothing to edit or commit and
-it resets when go2rtc restarts. Other viewers pick it up within 5 seconds. For a quick local try-out append
+The state is a hidden stream called `_spider` in go2rtc. **go2rtc saves streams added through its API into `config/go2rtc.yaml`,
+so the spider stays on – even after a restart – until someone switches it off.** (You can also delete the `_spider` entry from
+the file by hand.) Other viewers pick it up within 5 seconds. For a quick local try-out append
 `?spider=1` to the URL (`?spider=0` turns it off). After an update a browser may need one hard reload (`Ctrl+F5`).
 
 ## Security — please read
