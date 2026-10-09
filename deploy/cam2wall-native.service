@@ -1,0 +1,18 @@
+# EXPERIMENTAL - browser-less wall on the HDMI output for Pi Zero / Pi 1 (see scripts/native_wall.py).
+# Install:  sed "s|@DIR@|$PWD|g" deploy/cam2wall-native.service | sudo tee /etc/systemd/system/cam2wall-native.service
+#           sudo systemctl daemon-reload && sudo systemctl enable --now cam2wall-native
+# Needs the desktop off:  sudo systemctl set-default multi-user.target
+[Unit]
+Description=Cam2Wall native wall (GStreamer on HDMI)
+After=network-online.target cam2wall.service
+Wants=network-online.target
+
+[Service]
+User=root
+WorkingDirectory=@DIR@
+ExecStart=/usr/bin/python3 @DIR@/scripts/native_wall.py --size 1280x720 --fps 10
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -87,6 +87,22 @@ and Pi 1 (ARMv6) cannot run Chromium** ("hardware lacks support for NEON") – u
 dashboard on another device. A browser with several video streams is heavy, so use sub streams on the small boards.
 Untested on a Pi with NEON so far.
 
+### Pi Zero / Pi 1 without a browser: native wall (experimental)
+
+The original Pi Zero / Zero W / WH and Pi 1 (ARMv6) cannot run a browser, but their GPU can decode H.264.
+`scripts/native_wall.py` pulls every go2rtc stream over RTSP, decodes it in hardware (GStreamer `v4l2h264dec`) and shows
+the cameras as a **grid directly on the HDMI output** — no desktop, no keyboard:
+
+```bash
+sudo systemctl set-default multi-user.target && sudo reboot                  # desktop off, console only
+sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good                     gstreamer1.0-plugins-bad gstreamer1.0-libav python3
+sudo python3 scripts/native_wall.py --max 4                                  # try it (Ctrl+C stops)
+```
+
+Tune with `--size 960x540`, `--fps 8`, `--cols 2`, `--streams cam1,cam2`; use sub streams (`stream=1`). It is a plain video grid
+(no zoom, single view or spider) and limited by the Zero's decoder – expect a few small streams, not seven. Autostart:
+`deploy/cam2wall-native.service`. Untested on real hardware as of now.
+
 ## Configuration
 
 Everything lives in `config/go2rtc.yaml` (see [go2rtc docs](https://github.com/AlexxIT/go2rtc#configuration)).
