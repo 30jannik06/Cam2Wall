@@ -70,6 +70,22 @@ docker compose up -d
 Copy `deploy/cam2wall.service` to `/etc/systemd/system/`, adjust user and path, then
 `sudo systemctl enable --now cam2wall`.
 
+### Show the wall on a monitor attached to the Pi (experimental)
+
+Raspberry Pi OS **Lite** has no desktop or browser, so a monitor only shows the console. `scripts/kiosk.sh`
+installs a minimal Wayland kiosk (`cage` + Chromium) and a systemd service that opens the dashboard fullscreen
+at boot — no keyboard needed:
+
+```bash
+sh scripts/kiosk.sh                 # install + enable
+sudo systemctl start cam2wall-kiosk # start now (it also starts after a reboot)
+sh scripts/kiosk.sh remove          # undo
+```
+
+A browser with several video streams is heavy: on a **Pi Zero 2 W or newer** it works with a few sub streams; the
+original single-core **Pi Zero (ARMv6)** is most likely too slow – use it as the server only and open the dashboard on
+another device. Untested on real hardware as of now.
+
 ## Configuration
 
 Everything lives in `config/go2rtc.yaml` (see [go2rtc docs](https://github.com/AlexxIT/go2rtc#configuration)).
