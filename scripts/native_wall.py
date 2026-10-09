@@ -46,6 +46,10 @@ def has_element(name):
 
 def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
     n = len(names)
+    if n == 1:   # one camera: no compositor (too heavy for a Pi Zero), decode straight to the screen - smooth and current
+        url = f"{rtsp.rstrip('/')}/{names[0]}"
+        return (f"rtspsrc location={url} protocols=tcp latency=100 ! rtph264depay ! h264parse ! {decoder} "
+                f"! videoconvert ! queue max-size-buffers=3 leaky=downstream ! {sink}")
     if not cols:   # same rule as the web dashboard: the column count that makes the 16:9 tiles biggest
         def tile_area(c):
             w, h = out_w / c, out_h / math.ceil(n / c)
