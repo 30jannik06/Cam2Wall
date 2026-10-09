@@ -61,7 +61,7 @@ def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
         f"sink_{i}::width={fw} sink_{i}::height={fh}"
         for i in range(n)
     )
-    parts = [f"compositor name=comp background=black {pads} ! video/x-raw,width={out_w},height={out_h} ! videoconvert ! {sink}"]
+    parts = [f"compositor name=comp background=black {pads} ! video/x-raw,width={out_w},height={out_h} ! videoconvert ! queue max-size-buffers=3 leaky=downstream ! {sink}"]   # the queue keeps the display from stalling the decoder
     for name in names:
         url = f"{rtsp.rstrip('/')}/{name}"
         parts.append(
