@@ -6,11 +6,15 @@
 [Unit]
 Description=Cam2Wall native wall (GStreamer on HDMI)
 After=network-online.target cam2wall.service
+# keep the login prompt off the monitor (SSH still works)
+Conflicts=getty@tty1.service
 Wants=network-online.target
 
 [Service]
 User=root
 WorkingDirectory=@DIR@
+# black, empty console around the picture: clear it, hide the cursor, black-on-black text
+ExecStartPre=-/bin/sh -c 'printf "\033[?25l\033[30;40m\033[2J\033[H" > /dev/tty1'
 ExecStart=/usr/bin/python3 @DIR@/scripts/native_wall.py --api http://@PC@:1984 --rtsp rtsp://@PC@:8554 --streams _h264_kamera2
 Restart=always
 RestartSec=5
