@@ -47,9 +47,11 @@ def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
     cols = max(1, min(cols, n))
     rows = math.ceil(n / cols)
     tw, th = out_w // cols, out_h // rows
-
+    fw = min(tw, th * 16 // 9) // 2 * 2          # fit a 16:9 picture into the tile (no stretching), even size
+    fh = fw * 9 // 16 // 2 * 2
     pads = " ".join(
-        f"sink_{i}::xpos={(i % cols) * tw} sink_{i}::ypos={(i // cols) * th} sink_{i}::width={tw} sink_{i}::height={th}"
+        f"sink_{i}::xpos={(i % cols) * tw + (tw - fw) // 2} sink_{i}::ypos={(i // cols) * th + (th - fh) // 2} "
+        f"sink_{i}::width={fw} sink_{i}::height={fh}"
         for i in range(n)
     )
     parts = [f"compositor name=comp background=black {pads} ! video/x-raw,width={out_w},height={out_h} ! videoconvert ! {sink}"]
