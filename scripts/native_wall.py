@@ -82,7 +82,7 @@ def main():
     ap.add_argument("--max", type=int, default=0, help="show at most N cameras (default: all)")
     ap.add_argument("--streams", default="", help="comma separated stream names instead of all")
     ap.add_argument("--prefix", default="", help='only streams starting with this prefix, e.g. "_h264_" (see README: H.265 cameras)')
-    ap.add_argument("--sink", default="kmssink", help="GStreamer video sink (default %(default)s)")
+    ap.add_argument("--sink", default="kmssink sync=false", help="GStreamer video sink; sync=false shows frames immediately instead of dropping late ones (default: %(default)s)")
     ap.add_argument("--print", action="store_true", help="print the pipeline and exit")
     args = ap.parse_args()
 
