@@ -67,8 +67,12 @@ docker compose up -d
 
 ### Raspberry Pi autostart
 
-Copy `deploy/cam2wall.service` to `/etc/systemd/system/`, adjust user and path, then
-`sudo systemctl enable --now cam2wall`.
+In the Cam2Wall folder (fills in your user and path automatically):
+
+```bash
+sed "s|@USER@|$USER|g; s|@DIR@|$PWD|g" deploy/cam2wall.service | sudo tee /etc/systemd/system/cam2wall.service >/dev/null
+sudo systemctl daemon-reload && sudo systemctl enable --now cam2wall
+```
 
 ### Show the wall on a monitor attached to the Pi (experimental)
 

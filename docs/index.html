@@ -1016,9 +1016,9 @@ New-NetFirewallRule -DisplayName "Cam2Wall UDP" -Direction Inbound -Action Allow
                     <li><strong>Monitor am Pi?</strong> Pi OS <em>Lite</em> zeigt nur eine Konsole. Ein Browser-Kiosk (<code>sh scripts/kiosk.sh</code>) braucht eine CPU mit NEON: <strong>Pi Zero 2 W, 3, 4, 5</strong>. Der originale Pi Zero / Zero W / Pi 1 (ARMv6) kann Chromium nicht ausführen – dort als Server nutzen und das Dashboard auf einem anderen Gerät öffnen.</li>
                 </ul>
                 <h3>Autostart (systemd)</h3>
-                <div class="code"><button class="copy">Copy</button><pre>sudo cp deploy/cam2wall.service /etc/systemd/system/
-sudo nano /etc/systemd/system/cam2wall.service    <span class="cm"># adjust User + paths</span>
-sudo systemctl enable --now cam2wall</pre></div>
+                <div class="code"><button class="copy">Copy</button><pre><span class="cm"># inside the Cam2Wall folder – fills in your user and path</span>
+sed "s|@USER@|$USER|g; s|@DIR@|$PWD|g" deploy/cam2wall.service | sudo tee /etc/systemd/system/cam2wall.service &gt;/dev/null
+sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now cam2wall</pre></div>
             </section>
 
             <!-- SECURITY -->
