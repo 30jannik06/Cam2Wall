@@ -52,6 +52,17 @@ streams:
 Klick = Einzelansicht · Mausrad/Pinch = Zoom · Ziehen = Verschieben · Doppelklick = Zoom zurücksetzen ·
 `N` = Namen anzeigen · `F` = Vollbild · `Esc` = zurück
 
+## Pi Zero (WH) als Ein-Kamera-Monitor
+
+Der originale Pi Zero / Zero W / WH kann keinen Browser, aber H.264 in der GPU dekodieren. `scripts/native_wall.py` zeigt **eine Kamera
+vollbild direkt am HDMI-Ausgang** (ohne Desktop, ohne Tastatur). Auf dem Zero WH getestet: flüssig und aktuell. Mehrere Kameras gleichzeitig
+sind für den Zero zu viel – empfohlenes Setup: **PC/Server mit go2rtc + Pi Zero zeigt eine Kamera.** Bei H.265-Kameras macht der PC eine
+H.264-Kopie (`_h264_cam1: "ffmpeg:cam1#video=h264"`). Details und Autostart: [README.md](README.md).
+
+```bash
+sudo python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --streams _h264_cam1
+```
+
 ## Docker / Pi-Autostart
 
 Siehe [README.md](README.md) (`docker-compose.yml`, `deploy/cam2wall.service`).

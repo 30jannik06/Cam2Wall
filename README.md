@@ -91,36 +91,42 @@ and Pi 1 (ARMv6) cannot run Chromium** ("hardware lacks support for NEON") – u
 dashboard on another device. A browser with several video streams is heavy, so use sub streams on the small boards.
 Untested on a Pi with NEON so far.
 
-### Pi Zero / Pi 1 without a browser: native wall (experimental)
+### Pi Zero / Pi 1 as a one-camera monitor (PC/server + Pi Zero WH)
 
-The original Pi Zero / Zero W / WH and Pi 1 (ARMv6) cannot run a browser, but their GPU can decode H.264.
-`scripts/native_wall.py` pulls every go2rtc stream over RTSP, decodes it in hardware (GStreamer `v4l2h264dec`) and shows
-the cameras as a **grid directly on the HDMI output** — no desktop, no keyboard:
+The original Pi Zero / Zero W / WH and Pi 1 (ARMv6) cannot run a browser, but their GPU decodes H.264. `scripts/native_wall.py`
+pulls a go2rtc stream over RTSP, decodes it in hardware (GStreamer `v4l2h264dec`) and shows it **full-screen directly on the HDMI
+output** – no desktop, no keyboard. **Tested on a Pi Zero WH: one camera, smooth and current.** Several cameras at once are too
+much for the Zero (software compositing), so this is the recommended setup for it: **a PC/server runs go2rtc, the Pi Zero shows one camera.**
 
 ```bash
 sudo systemctl set-default multi-user.target && sudo reboot                  # desktop off, console only
 sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good                     gstreamer1.0-plugins-bad gstreamer1.0-libav python3
-sudo python3 scripts/native_wall.py --max 4                                  # try it (Ctrl+C stops)
+sudo python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --streams cam1   # Ctrl+C stops
 ```
 
-**H.265 cameras (e.g. Alnet NetStation channels):** the Zero's GPU decodes **H.264 only**. Let a stronger machine – your PC running
-go2rtc with ffmpeg – make an H.264 copy and point the Pi at it:
+**H.265 cameras (e.g. Alnet NetStation channels):** the Zero's GPU decodes **H.264 only**. Let the PC (go2rtc + ffmpeg) make an H.264 copy
+and show that one:
 
 ```yaml
 # config/go2rtc.yaml on the PC (names starting with "_" stay hidden in the web dashboard)
   _h264_cam1: "ffmpeg:cam1#video=h264"
-  _h264_cam2: "ffmpeg:cam2#video=h264"
 ```
 
 ```bash
-sudo python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --prefix _h264_
+sudo python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --streams _h264_cam1
 ```
 
-(Open TCP 8554 and 1984 on the PC's firewall.) Or switch the cameras / recorder to H.264 and no PC is needed.
+(Open TCP 8554 and 1984 on the PC's firewall.) If the camera/recorder already delivers H.264, no transcoding is needed.
 
-Tune with `--size 960x540`, `--fps 8`, `--cols 2`, `--streams cam1,cam2`; use sub streams (`stream=1`). It is a plain video grid
-(no zoom, single view or spider) and limited by the Zero's decoder – expect a few small streams, not seven. Autostart:
-`deploy/cam2wall-native.service`. Untested on real hardware as of now.
+Autostart at boot (replace `PC-IP` and `--streams` in the unit if needed):
+
+```bash
+sed "s|@DIR@|$PWD|g; s|@PC@|PC-IP|g" deploy/cam2wall-native.service | sudo tee /etc/systemd/system/cam2wall-native.service >/dev/null
+sudo systemctl daemon-reload && sudo systemctl enable --now cam2wall-native
+```
+
+With several `--streams` (or none) the script composes a grid, but that needs a stronger board (Zero 2 W or better); on the Zero it stutters.
+No zoom, single view or spider in this mode – it is a plain video output.
 
 ## Configuration
 

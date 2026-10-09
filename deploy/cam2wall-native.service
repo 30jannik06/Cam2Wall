@@ -1,6 +1,7 @@
 # EXPERIMENTAL - browser-less wall on the HDMI output for Pi Zero / Pi 1 (see scripts/native_wall.py).
-# Install:  sed "s|@DIR@|$PWD|g" deploy/cam2wall-native.service | sudo tee /etc/systemd/system/cam2wall-native.service
+# Install:  sed "s|@DIR@|$PWD|g; s|@PC@|PC-IP|g" deploy/cam2wall-native.service | sudo tee /etc/systemd/system/cam2wall-native.service
 #           sudo systemctl daemon-reload && sudo systemctl enable --now cam2wall-native
+# Replace PC-IP with the machine that runs go2rtc + ffmpeg; change --streams to your H.264 stream (one camera only).
 # Needs the desktop off:  sudo systemctl set-default multi-user.target
 [Unit]
 Description=Cam2Wall native wall (GStreamer on HDMI)
@@ -10,7 +11,7 @@ Wants=network-online.target
 [Service]
 User=root
 WorkingDirectory=@DIR@
-ExecStart=/usr/bin/python3 @DIR@/scripts/native_wall.py --size 1280x720 --fps 10
+ExecStart=/usr/bin/python3 @DIR@/scripts/native_wall.py --api http://@PC@:1984 --rtsp rtsp://@PC@:8554 --streams _h264_kamera2
 Restart=always
 RestartSec=5
 
