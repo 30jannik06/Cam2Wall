@@ -39,7 +39,11 @@ def has_element(name):
 
 def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
     n = len(names)
-    cols = cols or math.ceil(math.sqrt(n * out_w / out_h))
+    if not cols:   # same rule as the web dashboard: the column count that makes the 16:9 tiles biggest
+        def tile_area(c):
+            w, h = out_w / c, out_h / math.ceil(n / c)
+            return min(w, h * 16 / 9) ** 2
+        cols = max(range(1, n + 1), key=tile_area)
     cols = max(1, min(cols, n))
     rows = math.ceil(n / cols)
     tw, th = out_w // cols, out_h // rows
@@ -75,8 +79,7 @@ def main():
     out_w, out_h = (int(v) for v in args.size.lower().split("x"))
     found = has_element("v4l2h264dec")
     if found is None and not args.print:
-        sys.exit("GStreamer is not installed. Run:
-  sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base "
+        sys.exit("GStreamer is not installed. Run:  sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base "
                  "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav")
     decoder = "v4l2h264dec" if found or found is None else "avdec_h264"
     if decoder != "v4l2h264dec":
