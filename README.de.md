@@ -52,16 +52,18 @@ streams:
 Klick = Einzelansicht · Mausrad/Pinch = Zoom · Ziehen = Verschieben · Doppelklick = Zoom zurücksetzen ·
 `N` = Namen anzeigen · `F` = Vollbild · `Esc` = zurück
 
-## Pi Zero (WH) als Ein-Kamera-Monitor
+## Kleine Pis ohne Browser: native Wand
 
-Der originale Pi Zero / Zero W / WH kann keinen Browser, aber H.264 in der GPU dekodieren. `scripts/native_wall.py` zeigt **eine Kamera
-vollbild direkt am HDMI-Ausgang** (ohne Desktop, ohne Tastatur). Auf dem Zero WH getestet: flüssig und aktuell. Mehrere Kameras gleichzeitig
-sind für den Zero zu viel – empfohlenes Setup: **PC/Server mit go2rtc + Pi Zero zeigt eine Kamera.** Bei H.265-Kameras macht der PC eine
-H.264-Kopie (`_h264_cam1: "ffmpeg:cam1#video=h264"`). Details und Autostart: [README.md](README.md).
+Chromium braucht mehr Speicher als ein Pi Zero 2 W (512 MB) neben go2rtc hat – er wird beendet. Für kleine Boards zeigt
+`scripts/native_wall.py` die Kameras **direkt am HDMI-Ausgang** (ohne Desktop, Browser und Tastatur; die Spinne ist ein Browser-Feature und fehlt hier).
 
-```bash
-sudo python3 scripts/native_wall.py --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --streams _h264_cam1
-```
+- **Pi Zero 2 W** (64-bit Pi OS Lite): go2rtc **und** Wand laufen auf dem Pi, ohne PC. Zwei H.265-Kameras werden in Software
+  dekodiert: `sudo python3 scripts/native_wall.py --codec h265 --size 1280x720 --fps 10` (getestet).
+- **Pi Zero (W/WH), Pi 1**: GPU nur H.264, eine Kamera flüssig – ein PC/Server mit go2rtc macht bei H.265-Kameras eine H.264-Kopie
+  (`_h264_cam1: "ffmpeg:cam1#video=h264"`): `... --api http://PC-IP:1984 --rtsp rtsp://PC-IP:8554 --streams _h264_cam1`.
+- **Pi 3/4/5**: Browser-Kiosk (`scripts/kiosk.sh`) mit Spinne – ungetestet.
+
+Autostart und Details: [README.md](README.md).
 
 ## Docker / Pi-Autostart
 
