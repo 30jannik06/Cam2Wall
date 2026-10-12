@@ -44,11 +44,12 @@ def has_element(name):
         return None   # GStreamer is not installed at all
 
 
-def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
+def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink, codec="h264"):
     n = len(names)
+    depay = f"rtp{codec}depay ! {codec}parse"   # rtph264depay ! h264parse  /  rtph265depay ! h265parse
     if n == 1:   # one camera: no compositor (too heavy for a Pi Zero), decode straight to the screen - smooth and current
         url = f"{rtsp.rstrip('/')}/{names[0]}"
-        return (f"rtspsrc location={url} protocols=tcp latency=100 ! rtph264depay ! h264parse ! {decoder} "
+        return (f"rtspsrc location={url} protocols=tcp latency=100 ! {depay} ! {decoder} "
                 f"! videoconvert ! queue max-size-buffers=3 leaky=downstream ! {sink}")
     if not cols:   # same rule as the web dashboard: the column count that makes the 16:9 tiles biggest
         def tile_area(c):
@@ -69,7 +70,7 @@ def build_pipeline(names, rtsp, out_w, out_h, cols, fps, decoder, sink):
     for name in names:
         url = f"{rtsp.rstrip('/')}/{name}"
         parts.append(
-            f"rtspsrc location={url} protocols=tcp latency=200 ! rtph264depay ! h264parse ! {decoder} "
+            f"rtspsrc location={url} protocols=tcp latency=200 ! {depay} ! {decoder} "
             f"! videorate drop-only=true ! video/x-raw,framerate={fps}/1 "
             f"! queue max-size-buffers=2 leaky=downstream ! comp."
         )
@@ -87,16 +88,19 @@ def main():
     ap.add_argument("--streams", default="", help="comma separated stream names instead of all")
     ap.add_argument("--prefix", default="", help='only streams starting with this prefix, e.g. "_h264_" (see README: H.265 cameras)')
     ap.add_argument("--sink", default="kmssink sync=false", help="GStreamer video sink; sync=false shows frames immediately instead of dropping late ones (default: %(default)s)")
+    ap.add_argument("--codec", choices=["h264", "h265"], default="h264",
+                    help="video codec of the streams. h265 is decoded in software (fine on a Pi Zero 2 W / 3 / 4 / 5 for small streams); h264 uses the GPU (default: %(default)s)")
     ap.add_argument("--print", action="store_true", help="print the pipeline and exit")
     args = ap.parse_args()
 
     out_w, out_h = (int(v) for v in args.size.lower().split("x"))
-    found = has_element("v4l2h264dec")
+    hw = "v4l2h264dec" if args.codec == "h264" else "avdec_h265"
+    found = has_element(hw)
     if found is None and not args.print:
         sys.exit("GStreamer is not installed. Run:  sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base "
                  "gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav")
-    decoder = "v4l2h264dec" if found or found is None else "avdec_h264"
-    if decoder != "v4l2h264dec":
+    decoder = hw if found or found is None else ("avdec_h264" if args.codec == "h264" else hw)
+    if decoder != hw or (args.codec == "h264" and found is False):
         print("WARNING: v4l2h264dec (hardware decoder) not found - falling back to the software decoder (slow).", file=sys.stderr)
 
     child = None
@@ -123,7 +127,7 @@ def main():
             time.sleep(5)
             continue
 
-        pipeline = build_pipeline(names, args.rtsp, out_w, out_h, args.cols, args.fps, decoder, args.sink)
+        pipeline = build_pipeline(names, args.rtsp, out_w, out_h, args.cols, args.fps, decoder, args.sink, args.codec)
         if args.print:
             print("gst-launch-1.0 -e " + pipeline)
             return
